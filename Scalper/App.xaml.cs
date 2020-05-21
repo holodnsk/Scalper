@@ -36,6 +36,13 @@ namespace Scalper
                 Address = SmartComAddresses.Demo
                 
             };
+            
+            /*trader = new PlazaTrader()
+            {
+                Login = "tgFZcm_0002a",
+                Password = "12345",
+                Address = new DnsEndPoint("spectra-t1.moex.com",3001)
+            };*/
 
             // инициализируем механизм переподключения
             Trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
