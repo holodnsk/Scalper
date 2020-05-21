@@ -75,26 +75,26 @@ namespace Scalper
             Trader.NewPortfolio += NewPortfolio => this.GuiAsync(() => newPortfolioEventHandler());
 
             //Trader.NewPosition += _portfoliosWindow.PortfolioGrid.Positions.Add;
-            Trader.NewPosition += NewPosition => { App.NewPosition(); };
+            Trader.NewPosition += NewPosition => this.GuiAsync(() => newPositionEventHandler());
 
             // подписываемся на событие о неудачной регистрации заявок
             //Trader.OrderRegisterFailed += _ordersWindow.OrderGrid.AddRegistrationFail;
-            Trader.OrderRegisterFailed += OrderRegisterFailed => { App.OrderRegisterFailed(); };
+            Trader.OrderRegisterFailed += OrderRegisterFailed =>this.GuiAsync(() => orderRegisterFailedEventHandler());
 
             // подписываемся на событие о неудачном снятии заявок
             //Trader.OrderCancelFailed += OrderFailed;
-            Trader.OrderCancelFailed += OrderCancelFailed => { App.OrderCancelFailed(); };
+            Trader.OrderCancelFailed += OrderCancelFailed => this.GuiAsync(() => orderCancelFailedEventHandler());
 
             // подписываемся на событие о неудачной регистрации стоп-заявок
             //Trader.StopOrderRegisterFailed += _stopOrdersWindow.OrderGrid.AddRegistrationFail;
-            Trader.StopOrderRegisterFailed += StopOrderRegisterFailed => { App.StopOrderRegisterFailed(); };
+            Trader.StopOrderRegisterFailed += StopOrderRegisterFailed => this.GuiAsync(() => stopOrderRegisterFailedEventHandler());
 
             // подписываемся на событие о неудачном снятии стоп-заявок
             //Trader.StopOrderCancelFailed += OrderFailed;
-            Trader.StopOrderCancelFailed += StopOrderCancelFailed => { App.StopOrderCancelFailed(); };
+            Trader.StopOrderCancelFailed += StopOrderCancelFailed => this.GuiAsync(() => stopOrderCancelFailedEventHandler());
 
             //Trader.MassOrderCancelFailed += (transId, error) =>this.GuiAsync(() => MessageBox.Show(this, error.ToString(), LocalizedStrings.Str716));
-            Trader.MassOrderCancelFailed += (transId, error) => { MassOrderCancelFailed(); };
+            Trader.MassOrderCancelFailed += (transId, error) => this.GuiAsync(() => massOrderCancelFailedEventHandler());
 
             // устанавливаем поставщик маркет-данных
             //_securitiesWindow.SecurityPicker.MarketDataProvider = Trader;
@@ -119,32 +119,32 @@ namespace Scalper
 
         }
 
-        private static void MassOrderCancelFailed()
+        private static void massOrderCancelFailedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void StopOrderCancelFailed()
+        private static void stopOrderCancelFailedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void StopOrderRegisterFailed()
+        private static void stopOrderRegisterFailedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void OrderCancelFailed()
+        private static void orderCancelFailedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void OrderRegisterFailed()
+        private static void orderRegisterFailedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void NewPosition()
+        private static void newPositionEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
