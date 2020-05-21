@@ -169,34 +169,19 @@ namespace Scalper
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
+
         private void newSecurityEventHandler(Security security)
         {
-            MarketDepth depth = new MarketDepth(security);
-            depth.DepthChanged += () => this.GuiAsync(() => depthChangedEventHandler());
-            depth.QuotesChanged += () => this.GuiAsync(() => quotesChangedEventHandler());
-            
-            if(security.Code.Contains("AFLT"))
+            if (security.Code.Contains("EUR_RUB_TOM") 
+                || security.Code.Contains("AFLT")
+                || security.Code.Contains("PLZL")
+                || security.Code.Contains("ALRS")
+                || security.Code.Contains("USD000UTSTOM"))
             {
-                Console.WriteLine(security.Code);
+                Trader.RegisterMarketDepth(security);
                 
             }
-                //Console.WriteLine(security.Name);
-                
-                
-                //Console.WriteLine(security.Class);
-
-                Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
-            
         }
 
-        private void quotesChangedEventHandler()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void depthChangedEventHandler()
-        {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
-        }
     }
 }
