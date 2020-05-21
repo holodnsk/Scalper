@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Windows;
 using Ecng.Common;
@@ -12,7 +13,8 @@ using StockSharp.Localization;
 using StockSharp.Messages;
 using StockSharp.SmartCom;
 using StockSharp.SmartCom.Native;
-
+using Order = StockSharp.BusinessEntities.Order;
+using Position = StockSharp.BusinessEntities.Position;
 
 
 namespace Scalper
@@ -22,149 +24,109 @@ namespace Scalper
     /// </summary>
     public partial class App : Application
     {
-        
+        private Connector Trader;
 
 
         public App()
         {
-            
-            
-            Connector Trader = new SmartTrader()
+            Trader = new SmartTrader()
             {
                 Login = "Y1K5D0D3",
                 Password = "D8YYAP",
                 Address = SmartComAddresses.Demo
                 
             };
-            
 
             // инициализируем механизм переподключения
             Trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
-
             Trader.Restored += () => this.GuiAsync(() =>  restoredEventHandler());
-
-            // подписываемся на событие успешного соединения
             Trader.Connected += () => this.GuiAsync(() =>  connectedEventHandler());
-            
-            // Trader.Disconnected += () => this.GuiAsync(() => ChangeConnectStatus(false));
-
-            // подписываемся на событие разрыва соединения
+            Trader.Disconnected += () => this.GuiAsync(() => disconnectedEventHandler());
             Trader.ConnectionError += error => this.GuiAsync(() => connectionErrorEventHandler(error));
-
-            // подписываемся на ошибку обработки данных (транзакций и маркет)
-            Trader.Error += error => this.GuiAsync(() => transactionErrorEventHandler());
-
-            // подписываемся на ошибку подписки маркет-данных
-            //Trader.MarketDataSubscriptionFailed += (security, msg, error) => this.GuiAsync(() => MessageBox.Show(this, error.ToString(), LocalizedStrings.Str2956Params.Put(msg.DataType, security)));
-
-            // Trader.NewSecurity += _securitiesWindow.SecurityPicker.Securities.Add;
+            Trader.Error += error => this.GuiAsync(() => transactionErrorEventHandler(error));
+            Trader.MarketDataSubscriptionFailed += (security, msg, error) => this.GuiAsync(() => marketDataSubscriptionFailedEventHandler(security, msg, error));
             Trader.NewSecurity += security => this.GuiAsync(() => newSecurityEventHandler(security));
-           
-
-            //Trader.NewMyTrade += _myTradesWindow.TradeGrid.Trades.Add;
-            //Trader.NewTrade += _tradesWindow.TradeGrid.Trades.Add;
-            Trader.NewTrade += trade =>  this.GuiAsync(() => newTradeEventHandler());
-
-            //Trader.NewOrder += _ordersWindow.OrderGrid.Orders.Add;
-            Trader.NewOrder += order => this.GuiAsync(() => newOrderEventHandler());
-
-            //Trader.NewStopOrder += _stopOrdersWindow.OrderGrid.Orders.Add;
-            Trader.NewStopOrder += stoporder => this.GuiAsync(() => newStopOrder());
-
-            //Trader.NewPortfolio += _portfoliosWindow.PortfolioGrid.Portfolios.Add;
-            Trader.NewPortfolio += NewPortfolio => this.GuiAsync(() => newPortfolioEventHandler());
-
-            //Trader.NewPosition += _portfoliosWindow.PortfolioGrid.Positions.Add;
-            Trader.NewPosition += NewPosition => this.GuiAsync(() => newPositionEventHandler());
-
-            // подписываемся на событие о неудачной регистрации заявок
-            //Trader.OrderRegisterFailed += _ordersWindow.OrderGrid.AddRegistrationFail;
-            Trader.OrderRegisterFailed += OrderRegisterFailed =>this.GuiAsync(() => orderRegisterFailedEventHandler());
-
-            // подписываемся на событие о неудачном снятии заявок
-            //Trader.OrderCancelFailed += OrderFailed;
-            Trader.OrderCancelFailed += OrderCancelFailed => this.GuiAsync(() => orderCancelFailedEventHandler());
-
-            // подписываемся на событие о неудачной регистрации стоп-заявок
-            //Trader.StopOrderRegisterFailed += _stopOrdersWindow.OrderGrid.AddRegistrationFail;
-            Trader.StopOrderRegisterFailed += StopOrderRegisterFailed => this.GuiAsync(() => stopOrderRegisterFailedEventHandler());
-
-            // подписываемся на событие о неудачном снятии стоп-заявок
-            //Trader.StopOrderCancelFailed += OrderFailed;
-            Trader.StopOrderCancelFailed += StopOrderCancelFailed => this.GuiAsync(() => stopOrderCancelFailedEventHandler());
-
-            //Trader.MassOrderCancelFailed += (transId, error) =>this.GuiAsync(() => MessageBox.Show(this, error.ToString(), LocalizedStrings.Str716));
-            Trader.MassOrderCancelFailed += (transId, error) => this.GuiAsync(() => massOrderCancelFailedEventHandler());
-
-            // устанавливаем поставщик маркет-данных
-            //_securitiesWindow.SecurityPicker.MarketDataProvider = Trader;
-
-            //ShowSecurities.IsEnabled = ShowTrades.IsEnabled =
-            //ShowMyTrades.IsEnabled = ShowOrders.IsEnabled =
-            //ShowPortfolios.IsEnabled = ShowStopOrders.IsEnabled = true;
-
-
-            //Trader.Login = Login.Text;
-            //Trader.Password = Password.Password;
-            //Trader.Address = Address.SelectedAddress;
-
-            // применить нужную версию SmartCOM
-
-            //Trader.Version = IsSmartCom4.IsChecked == true ? SmartComVersions.V4 : SmartComVersions.V3;
-
-            // очищаем из текстового поля в целях безопасности
-            //Password.Clear();
-
+            Trader.MarketDepthChanged += changedMarketDepth => this.GuiAsync(() => marketDepthChangedEventHandler(changedMarketDepth));
+            Trader.MarketDepthsChanged += changedMarketDepths => this.GuiAsync(() => marketDepthsChangedEventHandler(changedMarketDepths));
+            Trader.NewMyTrade += newMyTrade =>  this.GuiAsync(() => newMyTradeEventHandler(newMyTrade));
+            Trader.NewTrade += newTrade =>  this.GuiAsync(() => newTradeEventHandler(newTrade));
+            Trader.NewOrder += newOrder => this.GuiAsync(() => newOrderEventHandler(newOrder));
+            Trader.NewStopOrder += newStopOrder => this.GuiAsync(() => newStopOrderEventHandler(newStopOrder));
+            Trader.NewPortfolio += newPortfolio => this.GuiAsync(() => newPortfolioEventHandler(newPortfolio));
+            Trader.NewPosition += newPosition => this.GuiAsync(() => newPositionEventHandler(newPosition));
+            Trader.OrderRegisterFailed += orderRegisterFailed =>this.GuiAsync(() => orderRegisterFailedEventHandler(orderRegisterFailed));
+            Trader.OrderCancelFailed += orderCancelFailed => this.GuiAsync(() => orderCancelFailedEventHandler(orderCancelFailed));
+            Trader.StopOrderRegisterFailed += stopOrderRegisterFailed => this.GuiAsync(() => stopOrderRegisterFailedEventHandler(stopOrderRegisterFailed));
+            Trader.StopOrderCancelFailed += stopOrderCancelFailed => this.GuiAsync(() => stopOrderCancelFailedEventHandler(stopOrderCancelFailed));
+            Trader.MassOrderCancelFailed += (transId, error) => this.GuiAsync(() => massOrderCancelFailedEventHandler(transId,error));
+            
             Trader.Connect();
 
         }
 
-        private static void massOrderCancelFailedEventHandler()
+
+
+        private void newMyTradeEventHandler(MyTrade newMyTrade)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void stopOrderCancelFailedEventHandler()
+        private void marketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void stopOrderRegisterFailedEventHandler()
+        private void disconnectedEventHandler()
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void orderCancelFailedEventHandler()
+        private static void massOrderCancelFailedEventHandler(long transId, Exception error)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void orderRegisterFailedEventHandler()
+        private static void stopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void newPositionEventHandler()
+        private static void stopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void newPortfolioEventHandler()
+        private static void orderCancelFailedEventHandler(OrderFail orderCancelFailed)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void newStopOrder()
+        private static void orderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void newOrderEventHandler()
+        private static void newPositionEventHandler(Position newPosition)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void newTradeEventHandler()
+        private static void newPortfolioEventHandler(Portfolio newPortfolio)
+        {
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+        }
+
+        private static void newStopOrderEventHandler(Order newStopOrder)
+        {
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+        }
+
+        private static void newOrderEventHandler(Order newOrder)
+        {
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+        }
+
+        private static void newTradeEventHandler(Trade newTrade)
         {
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
@@ -189,30 +151,52 @@ namespace Scalper
 
         private static void connectedEventHandler()
         {
-            // возводим флаг, что соединение установлено
-            // _isConnected = true;
-
-            // разблокируем кнопку Подключиться
-            // this.GuiAsync(() => ChangeConnectStatus(true));
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
-        private static void transactionErrorEventHandler()
+        // подписываемся на ошибку обработки данных (транзакций и маркет)
+        private static void transactionErrorEventHandler(Exception error)
         {
-            //MessageBox.Show((Window) this, error.ToString(), LocalizedStrings.Str2955);
             Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
+        
+        private void marketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
+        {
+            throw new NotImplementedException();
+        }
 
+        private void marketDepthChangedEventHandler(MarketDepth changedMarketDepth)
+        {
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+        }
         private void newSecurityEventHandler(Security security)
         {
+            MarketDepth depth = new MarketDepth(security);
+            depth.DepthChanged += () => this.GuiAsync(() => depthChangedEventHandler());
+            depth.QuotesChanged += () => this.GuiAsync(() => quotesChangedEventHandler());
+            
+            if(security.Code.Contains("AFLT"))
             {
-                //Console.WriteLine(security.Name);
                 Console.WriteLine(security.Code);
+                
+            }
+                //Console.WriteLine(security.Name);
+                
                 
                 //Console.WriteLine(security.Class);
 
                 Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
-            };
+            
+        }
+
+        private void quotesChangedEventHandler()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void depthChangedEventHandler()
+        {
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
     }
 }
