@@ -87,7 +87,7 @@ namespace Scalper
             if (trafficMode==TrafficMode.WRITE)
             {
                 Trader.Connect();
-                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,Trader);
+                //writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,Trader);
             }
 
         }
@@ -251,17 +251,16 @@ namespace Scalper
 
         private void newSecurityEventHandler(Security security)
         {
-            if (trafficMode==TrafficMode.WRITE)
-            {
-                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,security);
-            }
-            
             if (security.Code.Contains("EUR_RUB_TOM") 
                 || security.Code.Contains("AFLT")
                 || security.Code.Contains("PLZL")
                 || security.Code.Contains("ALRS")
                 || security.Code.Contains("USD000UTSTOM"))
             {
+                if (trafficMode==TrafficMode.WRITE)
+                {
+                    writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,security);
+                }
                 Trader.RegisterMarketDepth(security);
                 
             }
@@ -269,7 +268,15 @@ namespace Scalper
 
         private void writeTraffic(string trafficEventHandlerName)
         {
-            throw new NotImplementedException();
+            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+            TextWriter textWriter = new StringWriter();
+            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("trafficEventHandlerName");
+            jsonWriter.WriteValue(trafficEventHandlerName);
+            jsonWriter.WriteEndObject();
+            traficFile.Write(textWriter);
+            traficFile.Close();
         }
 
         private void writeTraffic(string trafficEventHandlerName, object  objectForWrite)
@@ -290,12 +297,40 @@ namespace Scalper
 
         private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2)
         {
-            throw new NotImplementedException();
+            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+            TextWriter textWriter = new StringWriter();
+            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("trafficEventHandlerName");
+            jsonWriter.WriteValue(trafficEventHandlerName);
+            jsonWriter.WritePropertyName("serializedObject1");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite1);
+            jsonWriter.WritePropertyName("serializedObject2");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite2);
+
+            jsonWriter.WriteEndObject();
+            traficFile.Write(textWriter);
+            traficFile.Close();
         }
 
         private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2, object objectForWrite3)
         {
-            throw new NotImplementedException();
+            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+            TextWriter textWriter = new StringWriter();
+            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("trafficEventHandlerName");
+            jsonWriter.WriteValue(trafficEventHandlerName);
+            jsonWriter.WritePropertyName("serializedObject1");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite1);
+            jsonWriter.WritePropertyName("serializedObject2");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite2);
+            jsonWriter.WritePropertyName("serializedObject3");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite3);
+
+            jsonWriter.WriteEndObject();
+            traficFile.Write(textWriter);
+            traficFile.Close();
         }
     }
 }
