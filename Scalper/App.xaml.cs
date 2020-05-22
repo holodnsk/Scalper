@@ -7,6 +7,7 @@ using System.Windows;
 using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NPOI.SS.Formula.Functions;
 using OEC.Data;
 using StockSharp.Algo;
@@ -42,16 +43,17 @@ namespace Scalper
         public App()
         {
             
-                dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
-            
+            dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
+
             Trader = new SmartTrader()
             {
                 Login = "Y1K5D0D3",
                 Password = "D8YYAP",
                 Address = SmartComAddresses.Demo
-                
+        
             };
-            
+
+
             /*trader = new PlazaTrader()
             {
                 Login = "tgFZcm_0002a",
@@ -59,7 +61,6 @@ namespace Scalper
                 Address = new DnsEndPoint("spectra-t1.moex.com",3001)
             };*/
 
-            // инициализируем механизм переподключения
             Trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
             Trader.Restored += () => this.GuiAsync(() =>  restoredEventHandler());
             Trader.Connected += () => this.GuiAsync(() =>  connectedEventHandler());
@@ -82,7 +83,12 @@ namespace Scalper
             Trader.StopOrderCancelFailed += stopOrderCancelFailed => this.GuiAsync(() => stopOrderCancelFailedEventHandler(stopOrderCancelFailed));
             Trader.MassOrderCancelFailed += (transId, error) => this.GuiAsync(() => massOrderCancelFailedEventHandler(transId,error));
             
-            Trader.Connect();
+            
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                Trader.Connect();
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,Trader);
+            }
 
         }
 
@@ -90,119 +96,164 @@ namespace Scalper
 
         private void newMyTradeEventHandler(MyTrade newMyTrade)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newMyTrade);
+            }
         }
 
         private void marketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,security,msg,error);
+            }
         }
 
         private void disconnectedEventHandler()
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            }
         }
 
-        private static void massOrderCancelFailedEventHandler(long transId, Exception error)
+        private void massOrderCancelFailedEventHandler(long transId, Exception error)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,transId,error);
+            }
         }
 
-        private static void stopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
+        private void stopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,stopOrderCancelFailed);
+            }
         }
 
-        private static void stopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
+        private void stopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,stopOrderRegisterFailed);
+            }
         }
 
-        private static void orderCancelFailedEventHandler(OrderFail orderCancelFailed)
+        private void orderCancelFailedEventHandler(OrderFail orderCancelFailed)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,orderCancelFailed);
+            }
         }
 
-        private static void orderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
+        private void orderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,orderRegisterFailed);
+            }
         }
 
-        private static void newPositionEventHandler(Position newPosition)
+        private void newPositionEventHandler(Position newPosition)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newPosition);
+            }
         }
 
-        private static void newPortfolioEventHandler(Portfolio newPortfolio)
+        private void newPortfolioEventHandler(Portfolio newPortfolio)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newPortfolio);
+            }
         }
 
-        private static void newStopOrderEventHandler(Order newStopOrder)
+        private void newStopOrderEventHandler(Order newStopOrder)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newStopOrder);
+            }
         }
 
-        private static void newOrderEventHandler(Order newOrder)
+        private void newOrderEventHandler(Order newOrder)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newOrder);
+            }
         }
 
-        private static void newTradeEventHandler(Trade newTrade)
+        private void newTradeEventHandler(Trade newTrade)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,newTrade);
+            }
         }
 
-        private static void restoredEventHandler()
+        private void restoredEventHandler()
         {
-            // разблокируем кнопку Экспорт (соединение было восстановлено)
-            // ChangeConnectStatus(true);
-            // MessageBox.Show(this, LocalizedStrings.Str2958);
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            }
         }
 
         private void connectionErrorEventHandler(Exception error)
         {
-            // заблокируем кнопку Экспорт (так как соединение было потеряно)
-            //ChangeConnectStatus(false);
-
-            //MessageBox.Show(this, error.ToString(), LocalizedStrings.Str2959);
-            Console.WriteLine(this + "\n" + error.ToString());
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,error);
+            }
         }
 
-        private static void connectedEventHandler()
+        private void connectedEventHandler()
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            }
         }
+
 
         // подписываемся на ошибку обработки данных (транзакций и маркет)
-        private static void transactionErrorEventHandler(Exception error)
+
+        private void transactionErrorEventHandler(Exception error)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,error);
+            }
         }
-        
+
         private void marketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
         {
-            
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,changedMarketDepths);
+            }
         }
 
         private void marketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
-            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,changedMarketDepth);
+            }
         }
 
         private void newSecurityEventHandler(Security security)
         {
             if (trafficMode==TrafficMode.WRITE)
             {
-                traficFile = new StreamWriter(@"traficFile "+dateTime+"txt",true);
-                
-                new JsonSerializer().Serialize(traficFile,security);
-                
-                traficFile.WriteLine();
-                traficFile.Close();
+                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name,security);
             }
             
             if (security.Code.Contains("EUR_RUB_TOM") 
@@ -216,5 +267,35 @@ namespace Scalper
             }
         }
 
+        private void writeTraffic(string trafficEventHandlerName)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void writeTraffic(string trafficEventHandlerName, object  objectForWrite)
+        {
+            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+            TextWriter textWriter = new StringWriter();
+            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("trafficEventHandlerName");
+            jsonWriter.WriteValue(trafficEventHandlerName);
+            jsonWriter.WritePropertyName("serializedObject");
+            new JsonSerializer().Serialize(jsonWriter, objectForWrite);
+
+            jsonWriter.WriteEndObject();
+            traficFile.Write(textWriter);
+            traficFile.Close();
+        }
+
+        private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2, object objectForWrite3)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
