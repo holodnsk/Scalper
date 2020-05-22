@@ -76,116 +76,114 @@ namespace Scalper
 
         private void newMyTradeEventHandler(MyTrade newMyTrade)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newMyTrade);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newMyTrade);
         }
 
         private void marketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, security, msg, error);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, security, msg, error);
         }
 
         private void disconnectedEventHandler()
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
         private void massOrderCancelFailedEventHandler(long transId, Exception error)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, transId, error);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, transId, error);
         }
 
         private void stopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderCancelFailed);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderCancelFailed);
         }
 
         private void stopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderRegisterFailed);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderRegisterFailed);
         }
 
         private void orderCancelFailedEventHandler(OrderFail orderCancelFailed)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderCancelFailed);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderCancelFailed);
         }
 
         private void orderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderRegisterFailed);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderRegisterFailed);
         }
 
         private void newPositionEventHandler(Position newPosition)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPosition);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPosition);
         }
 
         private void newPortfolioEventHandler(Portfolio newPortfolio)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPortfolio);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPortfolio);
         }
 
         private void newStopOrderEventHandler(Order newStopOrder)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newStopOrder);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newStopOrder);
         }
 
         private void newOrderEventHandler(Order newOrder)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newOrder);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newOrder);
         }
 
         private void newTradeEventHandler(Trade newTrade)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, newTrade);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newTrade);
         }
 
         private void restoredEventHandler()
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
         private void connectionErrorEventHandler(Exception error)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
         }
 
         private void connectedEventHandler()
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
         private void transactionErrorEventHandler(Exception error)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
         }
 
         private void marketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepths);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepths);
         }
 
         private void marketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
-            writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepth);
+            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepth);
         }
 
         private void newSecurityEventHandler(Security security)
         {
-            if (security.Code.Contains("EUR_RUB_TOM")
-                || security.Code.Contains("AFLT")
+            if (security.Code.Contains("AFLT")
                 || security.Code.Contains("PLZL")
-                || security.Code.Contains("ALRS")
-                || security.Code.Contains("USD000UTSTOM"))
+                || security.Code.Contains("ALRS"))
             {
-                writeTraffic(System.Reflection.MethodInfo.GetCurrentMethod().Name, security);
+                writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, security);
 
                 Trader.RegisterMarketDepth(security);
             }
         }
 
-        private void writeTraffic(string trafficEventHandlerName)
+        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName)
         {
-            if (trafficMode == TrafficMode.READ)
+            if (trafficMode != TrafficMode.WRITE)
                 return;
             
             traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
@@ -199,11 +197,11 @@ namespace Scalper
             traficFile.Close();
         }
 
-        private void writeTraffic(string trafficEventHandlerName, object objectForWrite)
+        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite)
         {
-            if (trafficMode == TrafficMode.READ)
+            if (trafficMode != TrafficMode.WRITE)
                 return;
-
+            
             traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
@@ -218,9 +216,9 @@ namespace Scalper
             traficFile.Close();
         }
 
-        private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2)
+        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2)
         {
-            if (trafficMode == TrafficMode.READ)
+            if (trafficMode != TrafficMode.WRITE)
                 return;
             
             traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
@@ -239,10 +237,10 @@ namespace Scalper
             traficFile.Close();
         }
 
-        private void writeTraffic(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2,
+        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2,
             object objectForWrite3)
         {
-            if (trafficMode == TrafficMode.READ)
+            if (trafficMode != TrafficMode.WRITE)
                 return;
             traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
