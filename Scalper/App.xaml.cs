@@ -1,208 +1,218 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Windows;
-using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using NPOI.SS.Formula.Functions;
-using OEC.Data;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
-using StockSharp.Localization;
 using StockSharp.Messages;
 using StockSharp.SmartCom;
-using StockSharp.SmartCom.Native;
 using Order = StockSharp.BusinessEntities.Order;
 using Position = StockSharp.BusinessEntities.Position;
 
 
 namespace Scalper
 {
-    public partial class App : Application
+    public partial class App
     {
-        private TrafficMode trafficMode = TrafficMode.WRITE;
-        private Connector Trader;
-        StreamWriter traficFile;
-        private string dateTime;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
+        private readonly Connector _trader;
+        private StreamWriter _trafficFile;
+        private readonly string _dateTime;
 
         public App()
         {
-            dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
-            Trader = new SmartTrader()
+            _dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
+            _trader = new SmartTrader()
             {
                 Login = "Y1K5D0D3",
                 Password = "D8YYAP",
                 Address = SmartComAddresses.Demo
             };
 
-            if (trafficMode == TrafficMode.WRITE)
+            if (_trafficMode == TrafficMode.Write)
             {
-                Trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
-                Trader.Restored += () => this.GuiAsync(() => restoredEventHandler());
-                Trader.Connected += () => this.GuiAsync(() => connectedEventHandler());
-                Trader.Disconnected += () => this.GuiAsync(() => disconnectedEventHandler());
-                Trader.ConnectionError += error => this.GuiAsync(() => connectionErrorEventHandler(error));
-                Trader.Error += error => this.GuiAsync(() => transactionErrorEventHandler(error));
-                Trader.MarketDataSubscriptionFailed += (security, msg, error) =>
-                    this.GuiAsync(() => marketDataSubscriptionFailedEventHandler(security, msg, error));
-                Trader.NewSecurity += security => this.GuiAsync(() => newSecurityEventHandler(security));
-                Trader.MarketDepthChanged += changedMarketDepth =>
-                    this.GuiAsync(() => marketDepthChangedEventHandler(changedMarketDepth));
-                Trader.MarketDepthsChanged += changedMarketDepths =>
-                    this.GuiAsync(() => marketDepthsChangedEventHandler(changedMarketDepths));
-                Trader.NewMyTrade += newMyTrade => this.GuiAsync(() => newMyTradeEventHandler(newMyTrade));
-                Trader.NewTrade += newTrade => this.GuiAsync(() => newTradeEventHandler(newTrade));
-                Trader.NewOrder += newOrder => this.GuiAsync(() => newOrderEventHandler(newOrder));
-                Trader.NewStopOrder += newStopOrder => this.GuiAsync(() => newStopOrderEventHandler(newStopOrder));
-                Trader.NewPortfolio += newPortfolio => this.GuiAsync(() => newPortfolioEventHandler(newPortfolio));
-                Trader.NewPosition += newPosition => this.GuiAsync(() => newPositionEventHandler(newPosition));
-                Trader.OrderRegisterFailed += orderRegisterFailed =>
-                    this.GuiAsync(() => orderRegisterFailedEventHandler(orderRegisterFailed));
-                Trader.OrderCancelFailed += orderCancelFailed =>
-                    this.GuiAsync(() => orderCancelFailedEventHandler(orderCancelFailed));
-                Trader.StopOrderRegisterFailed += stopOrderRegisterFailed =>
-                    this.GuiAsync(() => stopOrderRegisterFailedEventHandler(stopOrderRegisterFailed));
-                Trader.StopOrderCancelFailed += stopOrderCancelFailed =>
-                    this.GuiAsync(() => stopOrderCancelFailedEventHandler(stopOrderCancelFailed));
-                Trader.MassOrderCancelFailed += (transId, error) =>
-                    this.GuiAsync(() => massOrderCancelFailedEventHandler(transId, error));
-                Trader.Connect();
+                SubscribeEvents();
+                _trader.Connect();
+            }
+
+            if (_trafficMode ==TrafficMode.Read)
+            {
+                // TODO 
             }
         }
 
-
-        private void newMyTradeEventHandler(MyTrade newMyTrade)
+        private void SubscribeEvents()
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newMyTrade);
+            _trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
+            _trader.Restored += () => this.GuiAsync(RestoredEventHandler);
+            _trader.Connected += () => this.GuiAsync(ConnectedEventHandler);
+            _trader.Disconnected += () => this.GuiAsync(DisconnectedEventHandler);
+            _trader.ConnectionError += error => this.GuiAsync(() => ConnectionErrorEventHandler(error));
+            _trader.Error += error => this.GuiAsync(() => TransactionErrorEventHandler(error));
+            _trader.MarketDataSubscriptionFailed += (security, msg, error) =>
+                this.GuiAsync(() => MarketDataSubscriptionFailedEventHandler(security, msg, error));
+            _trader.NewSecurity += security => this.GuiAsync(() => NewSecurityEventHandler(security));
+            _trader.MarketDepthChanged += changedMarketDepth =>
+                this.GuiAsync(() => MarketDepthChangedEventHandler(changedMarketDepth));
+            _trader.MarketDepthsChanged += changedMarketDepths =>
+                this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
+            _trader.NewMyTrade += newMyTrade => this.GuiAsync(() => NewMyTradeEventHandler(newMyTrade));
+            _trader.NewTrade += newTrade => this.GuiAsync(() => NewTradeEventHandler(newTrade));
+            _trader.NewOrder += newOrder => this.GuiAsync(() => NewOrderEventHandler(newOrder));
+            _trader.NewStopOrder += newStopOrder => this.GuiAsync(() => NewStopOrderEventHandler(newStopOrder));
+            _trader.NewPortfolio += newPortfolio => this.GuiAsync(() => NewPortfolioEventHandler(newPortfolio));
+            _trader.NewPosition += newPosition => this.GuiAsync(() => NewPositionEventHandler(newPosition));
+            _trader.OrderRegisterFailed += orderRegisterFailed =>
+                this.GuiAsync(() => OrderRegisterFailedEventHandler(orderRegisterFailed));
+            _trader.OrderCancelFailed += orderCancelFailed =>
+                this.GuiAsync(() => OrderCancelFailedEventHandler(orderCancelFailed));
+            _trader.StopOrderRegisterFailed += stopOrderRegisterFailed =>
+                this.GuiAsync(() => StopOrderRegisterFailedEventHandler(stopOrderRegisterFailed));
+            _trader.StopOrderCancelFailed += stopOrderCancelFailed =>
+                this.GuiAsync(() => StopOrderCancelFailedEventHandler(stopOrderCancelFailed));
+            _trader.MassOrderCancelFailed += (transId, error) =>
+                this.GuiAsync(() => MassOrderCancelFailedEventHandler(transId, error));
         }
 
-        private void marketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
+
+        private void NewMyTradeEventHandler(MyTrade newMyTrade)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, security, msg, error);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newMyTrade);
         }
 
-        private void disconnectedEventHandler()
+        private void MarketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, security, msg,
+                error);
         }
 
-        private void massOrderCancelFailedEventHandler(long transId, Exception error)
+        private void DisconnectedEventHandler()
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, transId, error);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        private void stopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
+        private void MassOrderCancelFailedEventHandler(long transId, Exception error)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderCancelFailed);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, transId, error);
         }
 
-        private void stopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
+        private void StopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, stopOrderRegisterFailed);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name,
+                stopOrderCancelFailed);
         }
 
-        private void orderCancelFailedEventHandler(OrderFail orderCancelFailed)
+        private void StopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderCancelFailed);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name,
+                stopOrderRegisterFailed);
         }
 
-        private void orderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
+        private void OrderCancelFailedEventHandler(OrderFail orderCancelFailed)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, orderRegisterFailed);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, orderCancelFailed);
         }
 
-        private void newPositionEventHandler(Position newPosition)
+        private void OrderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPosition);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, orderRegisterFailed);
         }
 
-        private void newPortfolioEventHandler(Portfolio newPortfolio)
+        private void NewPositionEventHandler(Position newPosition)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newPortfolio);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newPosition);
         }
 
-        private void newStopOrderEventHandler(Order newStopOrder)
+        private void NewPortfolioEventHandler(Portfolio newPortfolio)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newStopOrder);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newPortfolio);
         }
 
-        private void newOrderEventHandler(Order newOrder)
+        private void NewStopOrderEventHandler(Order newStopOrder)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newOrder);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newStopOrder);
         }
 
-        private void newTradeEventHandler(Trade newTrade)
+        private void NewOrderEventHandler(Order newOrder)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, newTrade);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newOrder);
         }
 
-        private void restoredEventHandler()
+        private void NewTradeEventHandler(Trade newTrade)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, newTrade);
         }
 
-        private void connectionErrorEventHandler(Exception error)
+        private void RestoredEventHandler()
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        private void connectedEventHandler()
+        private void ConnectionErrorEventHandler(Exception error)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, error);
         }
 
-        private void transactionErrorEventHandler(Exception error)
+        private void ConnectedEventHandler()
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, error);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        private void marketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
+        private void TransactionErrorEventHandler(Exception error)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepths);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, error);
         }
 
-        private void marketDepthChangedEventHandler(MarketDepth changedMarketDepth)
+        private void MarketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
         {
-            writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, changedMarketDepth);
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, changedMarketDepths);
         }
 
-        private void newSecurityEventHandler(Security security)
+        private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
-            if (security.Code.Contains("AFLT")
-                || security.Code.Contains("PLZL")
-                || security.Code.Contains("ALRS"))
+            WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, changedMarketDepth);
+        }
+
+        private void NewSecurityEventHandler(Security security)
+        {
+            if (Contains(security))
             {
-                writeTrafficIfTrafficModeIsWrite(System.Reflection.MethodInfo.GetCurrentMethod().Name, security);
+                WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, security);
 
-                Trader.RegisterMarketDepth(security);
+                _trader.RegisterMarketDepth(security);
             }
         }
 
-        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName)
+        private static bool Contains(Security security)
         {
-            if (trafficMode != TrafficMode.WRITE)
+            return security.Code.Contains("AFLT")
+                   || security.Code.Contains("PLZL")
+                   || security.Code.Contains("ALRS");
+        }
+
+        private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName)
+        {
+            if (_trafficMode != TrafficMode.Write)
                 return;
-            
-            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+
+            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
             jsonWriter.WriteEndObject();
-            traficFile.Write(textWriter);
-            traficFile.Close();
+            _trafficFile.Write(textWriter);
+            _trafficFile.Close();
         }
 
-        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite)
+        private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite)
         {
-            if (trafficMode != TrafficMode.WRITE)
+            if (_trafficMode != TrafficMode.Write)
                 return;
-            
-            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+
+            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -212,16 +222,17 @@ namespace Scalper
             new JsonSerializer().Serialize(jsonWriter, objectForWrite);
 
             jsonWriter.WriteEndObject();
-            traficFile.Write(textWriter);
-            traficFile.Close();
+            _trafficFile.Write(textWriter);
+            _trafficFile.Close();
         }
 
-        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2)
+        private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1,
+            object objectForWrite2)
         {
-            if (trafficMode != TrafficMode.WRITE)
+            if (_trafficMode != TrafficMode.Write)
                 return;
-            
-            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+
+            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -233,16 +244,17 @@ namespace Scalper
             new JsonSerializer().Serialize(jsonWriter, objectForWrite2);
 
             jsonWriter.WriteEndObject();
-            traficFile.Write(textWriter);
-            traficFile.Close();
+            _trafficFile.Write(textWriter);
+            _trafficFile.Close();
         }
 
-        private void writeTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1, object objectForWrite2,
+        private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1,
+            object objectForWrite2,
             object objectForWrite3)
         {
-            if (trafficMode != TrafficMode.WRITE)
+            if (_trafficMode != TrafficMode.Write)
                 return;
-            traficFile = new StreamWriter(@"traficFile " + dateTime + "txt", true);
+            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -256,14 +268,14 @@ namespace Scalper
             new JsonSerializer().Serialize(jsonWriter, objectForWrite3);
 
             jsonWriter.WriteEndObject();
-            traficFile.Write(textWriter);
-            traficFile.Close();
+            _trafficFile.Write(textWriter);
+            _trafficFile.Close();
         }
 
-        enum TrafficMode
+        private enum TrafficMode
         {
-            WRITE,
-            READ
+            Write,
+            Read
         }
     }
 }
