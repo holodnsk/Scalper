@@ -1,10 +1,12 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Windows;
 using Ecng.Common;
 using Ecng.Xaml;
+using Newtonsoft.Json;
 using NPOI.SS.Formula.Functions;
 using OEC.Data;
 using StockSharp.Algo;
@@ -24,11 +26,24 @@ namespace Scalper
     /// </summary>
     public partial class App : Application
     {
+        enum TrafficMode
+        {
+            WRITE,
+            READ
+        }
+
+        private TrafficMode trafficMode = TrafficMode.WRITE;
+        
         private Connector Trader;
+        StreamWriter traficFile;
+        private string dateTime;
 
 
         public App()
         {
+            
+                dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
+            
             Trader = new SmartTrader()
             {
                 Login = "Y1K5D0D3",
@@ -169,7 +184,8 @@ namespace Scalper
         
         private void marketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
         {
-            throw new NotImplementedException();
+            
+            Console.WriteLine(System.Reflection.MethodInfo.GetCurrentMethod().Name);
         }
 
         private void marketDepthChangedEventHandler(MarketDepth changedMarketDepth)
@@ -179,6 +195,16 @@ namespace Scalper
 
         private void newSecurityEventHandler(Security security)
         {
+            if (trafficMode==TrafficMode.WRITE)
+            {
+                traficFile = new StreamWriter(@"traficFile "+dateTime+"txt",true);
+                
+                new JsonSerializer().Serialize(traficFile,security);
+                
+                traficFile.WriteLine();
+                traficFile.Close();
+            }
+            
             if (security.Code.Contains("EUR_RUB_TOM") 
                 || security.Code.Contains("AFLT")
                 || security.Code.Contains("PLZL")
