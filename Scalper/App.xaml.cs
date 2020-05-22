@@ -16,9 +16,19 @@ namespace Scalper
     public partial class App
     {
         private readonly TrafficMode _trafficMode = TrafficMode.Write;
+
         private readonly Connector _trader;
+
         private StreamWriter _trafficFile;
+
         private readonly string _dateTime;
+
+        private static bool CfgTradingSecurity(Security security)
+        {
+            return security.Code.Contains("AFLT")
+                   || security.Code.Contains("PLZL")
+                   || security.Code.Contains("ALRS");
+        }
 
         public App()
         {
@@ -32,6 +42,7 @@ namespace Scalper
 
             if (_trafficMode == TrafficMode.Write)
             {
+                _trafficFile = new StreamWriter(@"trafficFile " + _dateTime + "txt", true);
                 SubscribeEvents();
                 _trader.Connect();
             }
@@ -176,19 +187,12 @@ namespace Scalper
 
         private void NewSecurityEventHandler(Security security)
         {
-            if (Contains(security))
+            if (CfgTradingSecurity(security))
             {
                 WriteTrafficIfTrafficModeIsWrite(System.Reflection.MethodBase.GetCurrentMethod().Name, security);
 
                 _trader.RegisterMarketDepth(security);
             }
-        }
-
-        private static bool Contains(Security security)
-        {
-            return security.Code.Contains("AFLT")
-                   || security.Code.Contains("PLZL")
-                   || security.Code.Contains("ALRS");
         }
 
         private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName)
@@ -211,8 +215,7 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
-
-            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
+            
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -223,7 +226,7 @@ namespace Scalper
 
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
-            _trafficFile.Close();
+            _trafficFile.Flush();
         }
 
         private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1,
@@ -232,7 +235,6 @@ namespace Scalper
             if (_trafficMode != TrafficMode.Write)
                 return;
 
-            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -245,7 +247,7 @@ namespace Scalper
 
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
-            _trafficFile.Close();
+            _trafficFile.Flush();
         }
 
         private void WriteTrafficIfTrafficModeIsWrite(string trafficEventHandlerName, object objectForWrite1,
@@ -254,7 +256,7 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
-            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
+            
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -269,7 +271,7 @@ namespace Scalper
 
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
-            _trafficFile.Close();
+            _trafficFile.Flush();
         }
 
         private enum TrafficMode
