@@ -56,7 +56,11 @@ namespace Scalper
                 string line = _trafficSourceFile.ReadLine();
 
                 JObject jObject = JObject.Parse(line);
-                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString().Replace("\"trafficeventhandlername\": ","");
+                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
+                    .Replace("trafficEventHandlerName","")
+                    .Replace("\"","")
+                    .Replace(" ","")
+                    .Replace(":","");
                 switch (trafficEventHandlerName)
                 {
                     case "trafficEventHandlerName: RestoredEventHandler":
@@ -81,9 +85,10 @@ namespace Scalper
                             JsonConvert.DeserializeObject<MarketDataMessage>(jObject.Property("serializedObject2").ToString()),
                             JsonConvert.DeserializeObject<Exception>(jObject.Property("serializedObject3").ToString()));
                         break;
-                    case "trafficeventhandlername: newsecurityeventhandler":
+                    case "newSecurityEventHandler":
+                        string value = jObject.Property("serializedObject").ToString().Replace("\"serializedObject\": ","");
                         NewSecurityEventHandler(
-                            JsonConvert.DeserializeObject<Security>(jObject.Property("serializedObject").ToString()));
+                            JsonConvert.DeserializeObject<Security>(value));
                         break;
                     case "trafficEventHandlerName: MarketDepthChangedEventHandler":
                         MarketDepthChangedEventHandler(
