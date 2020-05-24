@@ -18,6 +18,7 @@ namespace Scalper
 {
     public partial class App
     {
+        private enum TrafficMode { Write, Read }
         private readonly TrafficMode _trafficMode = TrafficMode.Read;
 
         private readonly Connector _trader;
@@ -329,10 +330,6 @@ namespace Scalper
             _trafficFile.Flush();
         }
         
-        private enum TrafficMode
-        {
-            Write,
-            Read
-        }
+        
     }
 }
