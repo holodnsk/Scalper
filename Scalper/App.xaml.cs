@@ -309,7 +309,7 @@ namespace Scalper
             _trafficFile.Close();
         }
 
-        private void WriteTraffic(string trafficEventHandlerName, params object[] objectForWrite)
+        private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
@@ -319,59 +319,16 @@ namespace Scalper
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
-            jsonWriter.WritePropertyName("serializedObject");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite);
-
+            jsonWriter.WritePropertyName("serializedObjects");
+            jsonWriter.WriteStartArray();
+            foreach (object objectForWrite in objectsForWrite)
+                new JsonSerializer().Serialize(jsonWriter, objectForWrite);
+            jsonWriter.WriteStartArray();
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
             _trafficFile.Flush();
         }
-
-        private void WriteTraffic(string trafficEventHandlerName, object objectForWrite1,
-            object objectForWrite2)
-        {
-            if (_trafficMode != TrafficMode.Write)
-                return;
-
-            TextWriter textWriter = new StringWriter();
-            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("trafficEventHandlerName");
-            jsonWriter.WriteValue(trafficEventHandlerName);
-            jsonWriter.WritePropertyName("serializedObject1");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite1);
-            jsonWriter.WritePropertyName("serializedObject2");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite2);
-
-            jsonWriter.WriteEndObject();
-            _trafficFile.Write(textWriter);
-            _trafficFile.Flush();
-        }
-
-        private void WriteTraffic(string trafficEventHandlerName, object objectForWrite1,
-            object objectForWrite2,
-            object objectForWrite3)
-        {
-            if (_trafficMode != TrafficMode.Write)
-                return;
-            
-            TextWriter textWriter = new StringWriter();
-            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("trafficEventHandlerName");
-            jsonWriter.WriteValue(trafficEventHandlerName);
-            jsonWriter.WritePropertyName("serializedObject1");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite1);
-            jsonWriter.WritePropertyName("serializedObject2");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite2);
-            jsonWriter.WritePropertyName("serializedObject3");
-            new JsonSerializer().Serialize(jsonWriter, objectForWrite3);
-
-            jsonWriter.WriteEndObject();
-            _trafficFile.Write(textWriter);
-            _trafficFile.Flush();
-        }
-
+        
         private enum TrafficMode
         {
             Write,
