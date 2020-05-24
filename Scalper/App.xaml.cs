@@ -324,7 +324,7 @@ namespace Scalper
             jsonWriter.WriteStartArray();
             foreach (object objectForWrite in objectsForWrite)
                 new JsonSerializer().Serialize(jsonWriter, objectForWrite);
-            jsonWriter.WriteStartArray();
+            jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
             _trafficFile.Flush();
