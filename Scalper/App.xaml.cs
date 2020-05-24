@@ -309,7 +309,7 @@ namespace Scalper
             _trafficFile.Close();
         }
 
-        private void WriteTraffic(string trafficEventHandlerName, object objectForWrite)
+        private void WriteTraffic(string trafficEventHandlerName, params object[] objectForWrite)
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
