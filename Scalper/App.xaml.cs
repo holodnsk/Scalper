@@ -294,22 +294,6 @@ namespace Scalper
             }
         }
 
-        private void WriteTraffic(string trafficEventHandlerName)
-        {
-            if (_trafficMode != TrafficMode.Write)
-                return;
-
-            _trafficFile = new StreamWriter(@"traficFile " + _dateTime + "txt", true);
-            TextWriter textWriter = new StringWriter();
-            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("trafficEventHandlerName");
-            jsonWriter.WriteValue(trafficEventHandlerName);
-            jsonWriter.WriteEndObject();
-            _trafficFile.Write(textWriter);
-            _trafficFile.Close();
-        }
-
         private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
         {
             if (_trafficMode != TrafficMode.Write)
