@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -56,7 +56,8 @@ namespace Scalper
 
             if (_trafficMode == TrafficMode.Write)
             {
-                _trafficFile = new StreamWriter(@"trafficFile " + _dateTime + ".txt", true);
+                Directory.CreateDirectory("traffic");
+                _trafficFile = new StreamWriter(@"traffic\trafficFile " + _dateTime + ".txt", true);
                 SubscribeEvents();
                 _trader.Connect();
             } else if(_trafficMode == TrafficMode.Read)
