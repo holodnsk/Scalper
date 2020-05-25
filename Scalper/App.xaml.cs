@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RestSharp.Deserializers;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 using StockSharp.SmartCom;
-using Order = StockSharp.BusinessEntities.Order;
-using Position = StockSharp.BusinessEntities.Position;
-
 
 namespace Scalper
 {
@@ -211,107 +208,107 @@ namespace Scalper
 
         private void NewMyTradeEventHandler(MyTrade newMyTrade)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newMyTrade);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newMyTrade);
         }
 
         private void MarketDataSubscriptionFailedEventHandler(Security security, MarketDataMessage msg, Exception error)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, security, msg,
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, security, msg,
                 error);
         }
 
         private void DisconnectedEventHandler()
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name);
         }
 
         private void MassOrderCancelFailedEventHandler(long transId, Exception error)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, transId, error);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, transId, error);
         }
 
         private void StopOrderCancelFailedEventHandler(OrderFail stopOrderCancelFailed)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name,
+            WriteTraffic(MethodBase.GetCurrentMethod().Name,
                 stopOrderCancelFailed);
         }
 
         private void StopOrderRegisterFailedEventHandler(OrderFail stopOrderRegisterFailed)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name,
+            WriteTraffic(MethodBase.GetCurrentMethod().Name,
                 stopOrderRegisterFailed);
         }
 
         private void OrderCancelFailedEventHandler(OrderFail orderCancelFailed)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, orderCancelFailed);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, orderCancelFailed);
         }
 
         private void OrderRegisterFailedEventHandler(OrderFail orderRegisterFailed)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, orderRegisterFailed);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, orderRegisterFailed);
         }
 
         private void NewPositionEventHandler(Position newPosition)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newPosition);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newPosition);
         }
 
         private void NewPortfolioEventHandler(Portfolio newPortfolio)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newPortfolio);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newPortfolio);
         }
 
         private void NewStopOrderEventHandler(Order newStopOrder)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newStopOrder);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newStopOrder);
         }
 
         private void NewOrderEventHandler(Order newOrder)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newOrder);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newOrder);
         }
 
         private void NewTradeEventHandler(Trade newTrade)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, newTrade);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newTrade);
         }
 
         private void RestoredEventHandler()
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name);
         }
 
         private void ConnectionErrorEventHandler(Exception error)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, error);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, error);
         }
 
         private void ConnectedEventHandler()
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name);
         }
 
         private void TransactionErrorEventHandler(Exception error)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, error);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, error);
         }
 
         private void MarketDepthsChangedEventHandler(IEnumerable<MarketDepth> changedMarketDepths)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, changedMarketDepths);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepths);
         }
 
         private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
-            WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, changedMarketDepth);
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
         }
 
         private void NewSecurityEventHandler(Security security)
         {
             if (CfgTradingSecurity(security))
             {
-                WriteTraffic(System.Reflection.MethodBase.GetCurrentMethod().Name, security);
+                WriteTraffic(MethodBase.GetCurrentMethod().Name, security);
 
                 _trader.RegisterMarketDepth(security);
             }
