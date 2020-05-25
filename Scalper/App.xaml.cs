@@ -18,12 +18,12 @@ namespace Scalper
         private enum TrafficMode { Write, Read }
         private readonly TrafficMode _trafficMode = TrafficMode.Write;
 
-        private readonly Connector _trader;
+        private Connector _trader;
 
         private StreamWriter _trafficFile;
         private StreamReader _trafficSourceFile;
 
-        private readonly string _dateTime;
+        private string _dateTime;
         MainWindow wnd = new MainWindow();
         
 
