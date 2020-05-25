@@ -16,14 +16,16 @@ namespace Scalper
     public partial class App
     {
         private enum TrafficMode { Write, Read }
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
 
         private readonly Connector _trader;
 
         private StreamWriter _trafficFile;
-        private StreamReader _trafficSourceFile = new StreamReader("trafficFile 2020 05 25 00 57 28.txt");
+        private StreamReader _trafficSourceFile;
 
         private readonly string _dateTime;
+        MainWindow wnd = new MainWindow();
+        
 
         private static bool CfgTradingSecurity(Security security)
         {
@@ -34,6 +36,15 @@ namespace Scalper
         }
 
         public App()
+        {
+            Console.WriteLine("App() created");
+            
+            wnd.ShowLogMessage("App");
+            
+            initConnections();
+        }
+
+        private void initConnections()
         {
             _dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
             _trader = new SmartTrader()
@@ -48,14 +59,17 @@ namespace Scalper
                 _trafficFile = new StreamWriter(@"trafficFile " + _dateTime + ".txt", true);
                 SubscribeEvents();
                 _trader.Connect();
+            } else if(_trafficMode == TrafficMode.Read)
+            {
+                _trafficSourceFile = new StreamReader("trafficFile 2020 05 25 00 57 28.txt");
             }
 
-            if (_trafficMode ==TrafficMode.Read)
+            if (_trafficMode == TrafficMode.Read)
             {
                 while (true)
                 {
                     string line = _trafficSourceFile.ReadLine();
-                    if (line==null)
+                    if (line == null)
                         break;
 
                     JObject jObject = JObject.Parse(line);
@@ -168,7 +182,6 @@ namespace Scalper
                             break;
                     }
                 }
-
             }
         }
 
@@ -318,7 +331,8 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
-            
+            wnd.ShowLogMessage("WriteTraffic");
+            wnd.Show();
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -334,7 +348,5 @@ namespace Scalper
             _trafficFile.Write("\n");
             _trafficFile.Flush();
         }
-        
-        
     }
 }

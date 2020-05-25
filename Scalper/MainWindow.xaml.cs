@@ -12,7 +12,9 @@ namespace Scalper
         public MainWindow()
         {
             InitializeComponent();
-
+            Hide();
+            
+            //ShowLogMessage("MainWindow");
             
             
         }
