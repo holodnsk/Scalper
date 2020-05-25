@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -26,12 +27,11 @@ namespace Scalper
         public void ShowLogMessage(String message)
         {
             systemLog.Text = systemLog.Text + "\n" + message;
-            
-            
+
         }
         
         private enum TrafficMode { Write, Read }
-        private readonly TrafficMode _trafficMode = TrafficMode.Write;
+        private readonly TrafficMode _trafficMode = TrafficMode.Read;
 
         private Connector _trader;
 
@@ -64,13 +64,16 @@ namespace Scalper
                 _trafficFile = new StreamWriter(@"traffic\trafficFile " + _dateTime + ".txt", true);
                 SubscribeEvents();
                 _trader.Connect();
-            } else if(_trafficMode == TrafficMode.Read)
-            {
-                _trafficSourceFile = new StreamReader("trafficFile 2020 05 25 00 57 28.txt");
-            }
+            } 
 
             if (_trafficMode == TrafficMode.Read)
             {
+                IEnumerable trafficFileList = Directory.EnumerateFiles("traffic");
+                SelectTrafficSourceDialog dialog = new SelectTrafficSourceDialog("trafficFileList");
+
+
+                _trafficSourceFile = new StreamReader("trafficFile 2020 05 25 00 57 28.txt");
+                
                 while (true)
                 {
                     string line = _trafficSourceFile.ReadLine();
@@ -321,9 +324,17 @@ namespace Scalper
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
         }
-
+        
+        HashSet<string> boards = new HashSet<string>();
         private void NewSecurityEventHandler(Security security)
         {
+            string board = security.Board.ToString();
+            if (!boards.Contains(board))
+            {
+                boards.Add(board);
+                ShowLogMessage(board);
+            }
+            
             if (CfgTradingSecurity(security))
             {
                 WriteTraffic(MethodBase.GetCurrentMethod().Name, security);
