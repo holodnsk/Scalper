@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
@@ -70,6 +71,7 @@ namespace Scalper
             {
                 IEnumerable trafficFileList = Directory.EnumerateFiles("traffic");
                 SelectTrafficSourceDialog dialog = new SelectTrafficSourceDialog("trafficFileList");
+                dialog.ShowItems(trafficFileList);
 
 
                 _trafficSourceFile = new StreamReader("trafficFile 2020 05 25 00 57 28.txt");
