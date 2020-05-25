@@ -14,28 +14,20 @@ using StockSharp.SmartCom;
 
 namespace Scalper
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
+            
             InitializeComponent();
-            Console.WriteLine("App() created");
-            
-            ShowLogMessage("App");
-            
             initConnections();
-            
-            //ShowLogMessage("MainWindow");
-            
-            
         }
 
         public void ShowLogMessage(String message)
         {
             systemLog.Text = systemLog.Text + "\n" + message;
+            
+            
         }
         
         private enum TrafficMode { Write, Read }
@@ -55,7 +47,6 @@ namespace Scalper
                    || security.Code.Contains("EUR_RUB_TOM")
                    || security.Code.Contains("ALRS");
         }
-    
 
         private void initConnections()
         {
@@ -345,11 +336,8 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
-            
-            
 
-            ShowLogMessage("WriteTraffic");
-            //Show();
+            trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text.ToString())+1).ToString();
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();

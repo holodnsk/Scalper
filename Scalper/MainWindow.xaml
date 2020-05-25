@@ -6,11 +6,11 @@
         xmlns:local="clr-namespace:Scalper"
         mc:Ignorable="d"
         Title="Scalper2" Height="450" Width="800">
-    
-    <Grid>
-        <TextBlock Name="systemLog" Height="Auto" Margin="0" TextWrapping="Wrap" Width="Auto"/>
-        <Grid Name="grid1" HorizontalAlignment="Left" Height="166" Margin="0,253,0,0" VerticalAlignment="Top" Width="792">
-            
-        </Grid>
-    </Grid>
+
+	<Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+		<TextBlock Name="systemLog" Height="Auto" Margin="0,34,-132,-78" TextWrapping="Wrap" Width="Auto" />
+		<Label Content="traffic counter:" Margin="0,0,-161,0" VerticalAlignment="Center"/> 
+		<TextBlock Text="0" Name="trafficEntitiesCounter" Margin="92,0,-161,0" VerticalAlignment="Center"/>
+		
+	</Grid>
 </Window>
