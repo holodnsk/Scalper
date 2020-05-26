@@ -135,6 +135,8 @@ namespace Scalper
                         break;
                     case "trafficEventHandlerName: MarketDepthChangedEventHandler":
                         MarketDepthChangedEventHandler(
+                            
+                            // TODO create MarketDepth object of binary value from json 
                             JsonConvert.DeserializeObject<MarketDepth>(jObject.Property("serializedObject")
                                 .ToString()));
                         break;
@@ -332,17 +334,6 @@ namespace Scalper
         private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
-            MarketDepth nnn;
-            using (MemoryStream memory_stream = new MemoryStream())
-            {
-                // Serialize the object into the memory stream.
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(memory_stream, changedMarketDepth);
-
-                // Rewind the stream and use it to create a new object.
-                memory_stream.Position = 0;
-                nnn = (MarketDepth) formatter.Deserialize(memory_stream);
-            }
         }
 
         private void NewSecurityEventHandler(Security security)
@@ -358,12 +349,12 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
+            
+            
 
             trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
             TextWriter textWriter = new StringWriter();
-            TextWriter testTextWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
-            JsonWriter testJsonWriter = new JsonTextWriter(testTextWriter);
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
@@ -372,11 +363,14 @@ namespace Scalper
             
             foreach (object objectForWrite in objectsForWrite)
             {
-                string ss = JsonConvert.SerializeObject(objectsForWrite);
-                new JsonSerializer().Serialize(jsonWriter, objectForWrite);
-                new JsonSerializer().Serialize(testJsonWriter, objectForWrite);
-                
-                
+                using (MemoryStream memory_stream = new MemoryStream())
+                {
+                    // Serialize the object into the memory stream.
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(memory_stream, objectForWrite);
+                    jsonWriter.WriteValue(memory_stream.ToArray());
+                }
+
             }
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
