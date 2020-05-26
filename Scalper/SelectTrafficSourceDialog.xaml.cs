@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Windows.Controls;
 
 namespace Scalper
@@ -14,12 +15,10 @@ namespace Scalper
         {
             InitializeComponent();
             
-            FileInfo[] files = new DirectoryInfo(@"traffic").GetFiles();
-
+            FileInfo[] files = new DirectoryInfo(@"traffic").GetFiles().OrderByDescending(p => p.CreationTime).ToArray();
             foreach (FileInfo file in files)
-            {                
                 ListView.Items.Add(file);
-            }
+            
             Show();
         }        
         
