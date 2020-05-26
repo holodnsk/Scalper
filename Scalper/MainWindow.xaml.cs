@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -321,21 +321,12 @@ namespace Scalper
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
         }
-        
-        HashSet<string> boards = new HashSet<string>();
+
         private void NewSecurityEventHandler(Security security)
         {
-            string board = security.Board.ToString();
-            if (!boards.Contains(board))
-            {
-                boards.Add(board);
-                ShowLogMessage(board);
-            }
-            
             if (CfgTradingSecurity(security))
             {
                 WriteTraffic(MethodBase.GetCurrentMethod().Name, security);
-
                 _trader.RegisterMarketDepth(security);
             }
         }
