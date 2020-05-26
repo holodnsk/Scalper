@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NPOI.SS.Formula.Functions;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
@@ -29,7 +31,7 @@ namespace Scalper
         }
         
         private enum TrafficMode { Write, Read }
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
 
         private Connector _trader;
 
@@ -42,6 +44,16 @@ namespace Scalper
             return security.Code.Contains("AFLT")
                    || security.Code.Contains("PLZL")
                    || security.Code.Contains("EUR_RUB_TOM")
+                   || security.Code.Contains("ETLN")
+                   || security.Code.Contains("RASP")
+                   || security.Code.Contains("MAGN")
+                   || security.Code.Contains("TGKA")
+                   || security.Code.Contains("FEES")
+                   || security.Code.Contains("MGNT")
+                   || security.Code.Contains("MTLR")
+                   || security.Code.Contains("OGKB")
+                   || security.Code.Contains("TGKA")
+                   || security.Code.Contains("YNDX")
                    || security.Code.Contains("ALRS");
         }
 
@@ -127,9 +139,9 @@ namespace Scalper
                                 .ToString()));
                         break;
                     case "trafficEventHandlerName: MarketDepthsChangedEventHandler":
-                        MarketDepthsChangedEventHandler(
-                            JsonConvert.DeserializeObject<Enumerable<MarketDepth>>(jObject
-                                .Property("serializedObject").ToString()));
+                        // MarketDepthsChangedEventHandler(
+                        //     JsonConvert.DeserializeObject<Enumerable<MarketDepth>>(jObject
+                        //         .Property("serializedObject").ToString()));
                         break;
                     case "trafficEventHandlerName: NewMyTradeEventHandler":
                         NewMyTradeEventHandler(
@@ -203,8 +215,8 @@ namespace Scalper
             _trader.NewSecurity += security => this.GuiAsync(() => NewSecurityEventHandler(security));
             _trader.MarketDepthChanged += changedMarketDepth =>
                 this.GuiAsync(() => MarketDepthChangedEventHandler(changedMarketDepth));
-            _trader.MarketDepthsChanged += changedMarketDepths =>
-                this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
+            // _trader.MarketDepthsChanged += changedMarketDepths =>
+            //     this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
             _trader.NewMyTrade += newMyTrade => this.GuiAsync(() => NewMyTradeEventHandler(newMyTrade));
             _trader.NewTrade += newTrade => this.GuiAsync(() => NewTradeEventHandler(newTrade));
             _trader.NewOrder += newOrder => this.GuiAsync(() => NewOrderEventHandler(newOrder));
@@ -320,6 +332,17 @@ namespace Scalper
         private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
+            MarketDepth nnn;
+            using (MemoryStream memory_stream = new MemoryStream())
+            {
+                // Serialize the object into the memory stream.
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(memory_stream, changedMarketDepth);
+
+                // Rewind the stream and use it to create a new object.
+                memory_stream.Position = 0;
+                nnn = (MarketDepth) formatter.Deserialize(memory_stream);
+            }
         }
 
         private void NewSecurityEventHandler(Security security)
@@ -338,14 +361,23 @@ namespace Scalper
 
             trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
             TextWriter textWriter = new StringWriter();
+            TextWriter testTextWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            JsonWriter testJsonWriter = new JsonTextWriter(testTextWriter);
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
             jsonWriter.WritePropertyName("serializedObjects");
             jsonWriter.WriteStartArray();
+            
             foreach (object objectForWrite in objectsForWrite)
+            {
+                string ss = JsonConvert.SerializeObject(objectsForWrite);
                 new JsonSerializer().Serialize(jsonWriter, objectForWrite);
+                new JsonSerializer().Serialize(testJsonWriter, objectForWrite);
+                
+                
+            }
             jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
