@@ -34,7 +34,6 @@ namespace Scalper
         private Connector _trader;
 
         private StreamWriter _trafficFile;
-        private StreamReader _trafficSourceFile;
 
         private string _dateTime;
 
@@ -66,20 +65,16 @@ namespace Scalper
 
             if (_trafficMode == TrafficMode.Read)
             {
-                
                 SelectTrafficSourceDialog dialog = new SelectTrafficSourceDialog();
-                dialog.TrafficSourсeFileSelectedEvent += Dialog_FileSelected;
-
+                dialog.TrafficSourсeFileSelectedEvent += fileName => playTraffic(new StreamReader("traffic\\"+fileName));
             }
         }
 
-        private void Dialog_FileSelected(string filename)
+        private void playTraffic(StreamReader trafficSourceFile)
         {
-            _trafficSourceFile = new StreamReader("traffic\\"+filename);
-
             while (true)
             {
-                string line = _trafficSourceFile.ReadLine();
+                string line = trafficSourceFile.ReadLine();
                 if (line == null)
                     break;
 
