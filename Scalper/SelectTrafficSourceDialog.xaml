@@ -7,7 +7,10 @@
         mc:Ignorable="d"
         Title="SelectTrafficSourceDialog" Height="450" Width="800">
 	<Grid>
-		<ListBox HorizontalAlignment="Left" Height="399" Margin="10,10,0,0" VerticalAlignment="Top" Width="772"/>
+
+
+		<ListView Name="ListView" MouseDoubleClick="ListView_MouseDoubleClick"/>
+
 
 	</Grid>
 </Window>
