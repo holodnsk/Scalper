@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using Ecng.Common;
 using Ecng.Reflection;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NPOI.SS.Formula.Functions;
+using OEC;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
@@ -32,7 +35,6 @@ namespace Scalper
         }
         
         private enum TrafficMode { Write, Read }
-        private readonly TrafficMode _trafficMode = TrafficMode.Write;
 
         private Connector _trader;
 
@@ -92,20 +94,9 @@ namespace Scalper
                     break;
 
                 JObject jObject = JObject.Parse(line);
-                IEnumerable<JProperty> properties = jObject.Properties();
-                IEnumerable<Array> values = jObject.Values<Array>();
-                string trafficEventHandlerNameValue = jObject.Value<string>("trafficEventHandlerName");
-                Array serializedObjects = jObject.Value<Array>("serializedObjects");
-
 
                 string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
                     .Replace("trafficEventHandlerName", "")
-                    .Replace("\"", "")
-                    .Replace(" ", "")
-                    .Replace(":", "");
-                
-                string trafficObjectsArray = jObject.Property("serializedObjects").ToString()
-                    .Replace("serializedObjects", "")
                     .Replace("\"", "")
                     .Replace(" ", "")
                     .Replace(":", "");
@@ -182,10 +173,11 @@ namespace Scalper
                         NewStopOrderEventHandler(
                             JsonConvert.DeserializeObject<Order>(jObject.Property("serializedObject").ToString()));
                         break;
-                    case "trafficEventHandlerName: NewPortfolioEventHandler":
-                        NewPortfolioEventHandler(
-                            JsonConvert.DeserializeObject<Portfolio>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "NewPortfolioEventHandler":
+
+                        readPortfolioFromFile(jObject);
+                            
+                        //NewPortfolioEveHandler();
                         break;
                     case "trafficEventHandlerName: NewPositionEventHandler":
                         NewPositionEventHandler(
@@ -389,7 +381,9 @@ namespace Scalper
                     // Serialize the object into the memory stream.
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(memory_stream, objectForWrite);
-                    jsonWriter.WriteValue(memory_stream.ToArray());
+                    string s = Encoding.Unicode.GetString(memory_stream.ToArray());
+
+                    jsonWriter.WriteValue(s);
                 }
             }
             jsonWriter.WriteEndObject();
@@ -397,5 +391,27 @@ namespace Scalper
             _trafficFile.Write("\n");
             _trafficFile.Flush();
         }
+
+        private static void readPortfolioFromFile(JObject jObject)
+        {
+            using (MemoryStream memory_stream = new MemoryStream())
+            {
+                string buffer = jObject.Value<string>("StockSharp.BusinessEntities.Portfolio");
+                byte[] bytesASCII = Encoding.ASCII.GetBytes(buffer);
+                byte[] bytesUnicode = Encoding.Unicode.GetBytes(buffer);
+                byte[] bytesUTF8 = Encoding.UTF8.GetBytes(buffer);
+                char[] array = buffer.ToArray();
+
+                var writer = new StreamWriter(memory_stream);
+                writer.Write(buffer);
+                writer.Flush();
+                memory_stream.Position = 0;
+                var formatter = new BinaryFormatter();
+                object deserialize = formatter.Deserialize(memory_stream);
+                
+            }
+        }
+
+        private readonly TrafficMode _trafficMode = TrafficMode.Read;
     }
 }
