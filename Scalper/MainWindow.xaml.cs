@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using Ecng.Common;
+using Ecng.Reflection;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -62,8 +63,8 @@ namespace Scalper
             _dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
             _trader = new SmartTrader()
             {
-                Login = "Y1K5D0D3",
-                Password = "D8YYAP",
+                Login = "QF7R61QD",
+                Password = "Y39HGY",
                 Address = SmartComAddresses.Demo
             };
 
@@ -91,11 +92,24 @@ namespace Scalper
                     break;
 
                 JObject jObject = JObject.Parse(line);
+                IEnumerable<JProperty> properties = jObject.Properties();
+                IEnumerable<Array> values = jObject.Values<Array>();
+                string trafficEventHandlerNameValue = jObject.Value<string>("trafficEventHandlerName");
+                Array serializedObjects = jObject.Value<Array>("serializedObjects");
+
+
                 string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
                     .Replace("trafficEventHandlerName", "")
                     .Replace("\"", "")
                     .Replace(" ", "")
                     .Replace(":", "");
+                
+                string trafficObjectsArray = jObject.Property("serializedObjects").ToString()
+                    .Replace("serializedObjects", "")
+                    .Replace("\"", "")
+                    .Replace(" ", "")
+                    .Replace(":", "");
+                
                 switch (trafficEventHandlerName)
                 {
                     case "trafficEventHandlerName: RestoredEventHandler":
@@ -107,7 +121,13 @@ namespace Scalper
                     case "trafficEventHandlerName: DisconnectedEventHandler":
                         DisconnectedEventHandler();
                         break;
-                    case "trafficEventHandlerName: ConnectionErrorEventHandler":
+                    case "ConnectionErrorEventHandler":
+
+                        ;
+                        string jProperty = "{"+jObject.Property("serializedObjects")+"}";
+                        var aa = JsonConvert.DeserializeObject<Array>(jProperty);
+                        //JArray a = JArray.Parse(jProperty);
+
 
                         ConnectionErrorEventHandler(
                             JsonConvert.DeserializeObject<Exception>(
@@ -358,11 +378,12 @@ namespace Scalper
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
-            jsonWriter.WritePropertyName("serializedObjects");
-            jsonWriter.WriteStartArray();
+            
+            
             
             foreach (object objectForWrite in objectsForWrite)
             {
+                jsonWriter.WritePropertyName(objectForWrite.GetType().ToString());
                 using (MemoryStream memory_stream = new MemoryStream())
                 {
                     // Serialize the object into the memory stream.
@@ -370,9 +391,7 @@ namespace Scalper
                     formatter.Serialize(memory_stream, objectForWrite);
                     jsonWriter.WriteValue(memory_stream.ToArray());
                 }
-
             }
-            jsonWriter.WriteEndArray();
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
             _trafficFile.Write("\n");
