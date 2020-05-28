@@ -15,7 +15,7 @@ namespace Scalper
         {
             InitializeComponent();
             
-            FileInfo[] files = new DirectoryInfo(@"traffic").GetFiles().OrderByDescending(p => p.CreationTime).ToArray();
+            FileInfo[] files = new DirectoryInfo(@"traffic").GetFiles("*txt").OrderByDescending(p => p.CreationTime).ToArray();
             foreach (FileInfo file in files)
                 ListView.Items.Add(file);
             
