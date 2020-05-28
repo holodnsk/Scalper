@@ -397,12 +397,12 @@ namespace Scalper
                         BinaryReader readFile = new BinaryReader(new FileStream(filename,FileMode.Open));
                         byte[] readBytes = readFile.ReadBytes((int)new System.IO.FileInfo(filename).Length);
                      
-                        var writer = new StreamWriter(memory_stream);
+                        var writer = new BinaryWriter(memory_stream2);
                         writer.Write(readBytes);
                         writer.Flush();
-                        memory_stream.Position = 0;
+                        memory_stream2.Position = 0;
                         var formatter2 = new BinaryFormatter();
-                        object deserialize = formatter2.Deserialize(memory_stream);
+                        object deserialize = formatter2.Deserialize(memory_stream2);
                 
                     }
                     
