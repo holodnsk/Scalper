@@ -8,10 +8,13 @@ using System.Text;
 using Ecng.Common;
 using Ecng.Reflection;
 using Ecng.Xaml;
+using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NPOI.POIFS.FileSystem;
 using NPOI.SS.Formula.Functions;
 using OEC;
+using ProtoBuf;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
@@ -381,9 +384,28 @@ namespace Scalper
                     // Serialize the object into the memory stream.
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(memory_stream, objectForWrite);
-                    string s = Encoding.Unicode.GetString(memory_stream.ToArray());
-
-                    jsonWriter.WriteValue(s);
+                    byte[] array = memory_stream.ToArray();
+                    string filename = "traffic\\"+DateTime.Now.Ticks.ToString();
+                    BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
+                    file.Write(array);
+                    file.Close();
+                    jsonWriter.WriteValue(filename);
+                    
+                    
+                    using (MemoryStream memory_stream2 = new MemoryStream())
+                    {
+                        BinaryReader readFile = new BinaryReader(new FileStream(filename,FileMode.Open));
+                        byte[] readBytes = readFile.ReadBytes((int)new System.IO.FileInfo(filename).Length);
+                     
+                        var writer = new StreamWriter(memory_stream);
+                        writer.Write(readBytes);
+                        writer.Flush();
+                        memory_stream.Position = 0;
+                        var formatter2 = new BinaryFormatter();
+                        object deserialize = formatter2.Deserialize(memory_stream);
+                
+                    }
+                    
                 }
             }
             jsonWriter.WriteEndObject();
@@ -412,6 +434,6 @@ namespace Scalper
             }
         }
 
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
     }
 }
