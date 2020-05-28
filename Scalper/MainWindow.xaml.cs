@@ -47,20 +47,22 @@ namespace Scalper
 
         private static bool CfgTradingSecurity(Security security)
         {
-            return security.Code.Contains("AFLT")
-                   || security.Code.Contains("PLZL")
-                   || security.Code.Contains("EUR_RUB_TOM")
-                   || security.Code.Contains("ETLN")
-                   || security.Code.Contains("RASP")
-                   || security.Code.Contains("MAGN")
-                   || security.Code.Contains("TGKA")
-                   || security.Code.Contains("FEES")
-                   || security.Code.Contains("MGNT")
-                   || security.Code.Contains("MTLR")
-                   || security.Code.Contains("OGKB")
-                   || security.Code.Contains("TGKA")
-                   || security.Code.Contains("YNDX")
-                   || security.Code.Contains("ALRS");
+            return 
+                security.Code.Contains("AFLT")
+                   // || security.Code.Contains("PLZL")
+                   // || security.Code.Contains("EUR_RUB_TOM")
+                   // || security.Code.Contains("ETLN")
+                   // || security.Code.Contains("RASP")
+                   // || security.Code.Contains("MAGN")
+                   // || security.Code.Contains("TGKA")
+                   // || security.Code.Contains("FEES")
+                   // || security.Code.Contains("MGNT")
+                   // || security.Code.Contains("MTLR")
+                   // || security.Code.Contains("OGKB")
+                   // || security.Code.Contains("TGKA")
+                   // || security.Code.Contains("YNDX")
+                   // || security.Code.Contains("ALRS")
+                ;
         }
 
         private void initConnections()
@@ -106,112 +108,61 @@ namespace Scalper
                 
                 switch (trafficEventHandlerName)
                 {
-                    case "trafficEventHandlerName: RestoredEventHandler":
+                    case "RestoredEventHandler":
                         RestoredEventHandler();
                         break;
-                    case "trafficEventHandlerName: ConnectedEventHandler":
+                    case "ConnectedEventHandler":
                         ConnectedEventHandler();
                         break;
-                    case "trafficEventHandlerName: DisconnectedEventHandler":
+                    case "DisconnectedEventHandler":
                         DisconnectedEventHandler();
                         break;
                     case "ConnectionErrorEventHandler":
-
-                        ;
-                        string jProperty = "{"+jObject.Property("serializedObjects")+"}";
-                        var aa = JsonConvert.DeserializeObject<Array>(jProperty);
-                        //JArray a = JArray.Parse(jProperty);
-
-
-                        ConnectionErrorEventHandler(
-                            JsonConvert.DeserializeObject<Exception>(
-                                jObject.Property("serializedObject").ToString()));
+                        
                         break;
-                    case "trafficEventHandlerName: TransactionErrorEventHandler":
-                        TransactionErrorEventHandler(
-                            JsonConvert.DeserializeObject<Exception>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "TransactionErrorEventHandler":
+
                         break;
-                    case "trafficEventHandlerName: MarketDataSubscriptionFailedEventHandler":
-                        MarketDataSubscriptionFailedEventHandler(
-                            JsonConvert.DeserializeObject<Security>(
-                                jObject.Property("serializedObject1").ToString()),
-                            JsonConvert.DeserializeObject<MarketDataMessage>(jObject.Property("serializedObject2")
-                                .ToString()),
-                            JsonConvert.DeserializeObject<Exception>(jObject.Property("serializedObject3")
-                                .ToString()));
+                    case "MarketDataSubscriptionFailedEventHandler":
+
                         break;
                     case "newSecurityEventHandler":
-                        string value = jObject.Property("serializedObject").ToString()
-                            .Replace("\"serializedObject\": ", "");
-                        NewSecurityEventHandler(
-                            JsonConvert.DeserializeObject<Security>(value));
+                    
                         break;
-                    case "trafficEventHandlerName: MarketDepthChangedEventHandler":
-                        MarketDepthChangedEventHandler(
-                            
-                            // TODO create MarketDepth object of binary value from json 
-                            JsonConvert.DeserializeObject<MarketDepth>(jObject.Property("serializedObject")
-                                .ToString()));
+                    case "MarketDepthChangedEventHandler":
+                        
                         break;
-                    case "trafficEventHandlerName: MarketDepthsChangedEventHandler":
-                        // MarketDepthsChangedEventHandler(
-                        //     JsonConvert.DeserializeObject<Enumerable<MarketDepth>>(jObject
-                        //         .Property("serializedObject").ToString()));
+                    case "MarketDepthsChangedEventHandler":
+                        
                         break;
-                    case "trafficEventHandlerName: NewMyTradeEventHandler":
-                        NewMyTradeEventHandler(
-                            JsonConvert.DeserializeObject<MyTrade>(jObject.Property("serializedObject")
-                                .ToString()));
+                    case "NewMyTradeEventHandler":
+                        
                         break;
-                    case "trafficEventHandlerName: NewTradeEventHandler":
-                        NewTradeEventHandler(
-                            JsonConvert.DeserializeObject<Trade>(jObject.Property("serializedObject").ToString()));
+                    case "NewTradeEventHandler":
+                        
                         break;
-                    case "trafficEventHandlerName: NewOrderEventHandler":
-                        NewOrderEventHandler(
-                            JsonConvert.DeserializeObject<Order>(jObject.Property("serializedObject").ToString()));
+                    case "NewOrderEventHandler":
+                        
                         break;
-                    case "trafficEventHandlerName: NewStopOrderEventHandler":
-                        NewStopOrderEventHandler(
-                            JsonConvert.DeserializeObject<Order>(jObject.Property("serializedObject").ToString()));
+                    case "NewStopOrderEventHandler":
+                        
                         break;
                     case "NewPortfolioEventHandler":
-
+                        
                         NewPortfolioEventHandler(readPortfolioFromFile(jObject));
-                            
-                        //NewPortfolioEveHandler();
+                        
                         break;
-                    case "trafficEventHandlerName: NewPositionEventHandler":
-                        NewPositionEventHandler(
-                            JsonConvert.DeserializeObject<Position>(jObject.Property("serializedObject")
-                                .ToString()));
+                    case "NewPositionEventHandler":
                         break;
-                    case "trafficEventHandlerName: OrderRegisterFailedEventHandler":
-                        OrderRegisterFailedEventHandler(
-                            JsonConvert.DeserializeObject<OrderFail>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "OrderRegisterFailedEventHandler":
                         break;
-                    case "trafficEventHandlerName: OrderCancelFailedEventHandler":
-                        OrderCancelFailedEventHandler(
-                            JsonConvert.DeserializeObject<OrderFail>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "OrderCancelFailedEventHandler":
                         break;
-                    case "trafficEventHandlerName: StopOrderRegisterFailedEventHandler":
-                        StopOrderRegisterFailedEventHandler(
-                            JsonConvert.DeserializeObject<OrderFail>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "StopOrderRegisterFailedEventHandler":
                         break;
-                    case "trafficEventHandlerName: StopOrderCancelFailedEventHandler":
-                        StopOrderCancelFailedEventHandler(
-                            JsonConvert.DeserializeObject<OrderFail>(
-                                jObject.Property("serializedObject").ToString()));
+                    case "StopOrderCancelFailedEventHandler":
                         break;
-                    case "trafficEventHandlerName: MassOrderCancelFailedEventHandler":
-                        MassOrderCancelFailedEventHandler(
-                            JsonConvert.DeserializeObject<long>(jObject.Property("serializedObject1").ToString()),
-                            JsonConvert.DeserializeObject<Exception>(jObject.Property("serializedObject2")
-                                .ToString()));
+                    case "MassOrderCancelFailedEventHandler":
                         break;
                     default:
                         break;
@@ -430,6 +381,6 @@ namespace Scalper
                 Replace(objectName,"");
         }
 
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
     }
 }
