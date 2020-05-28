@@ -2,19 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using Ecng.Common;
-using Ecng.Reflection;
 using Ecng.Xaml;
-using ICSharpCode.SharpZipLib.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NPOI.POIFS.FileSystem;
-using NPOI.SS.Formula.Functions;
-using OEC;
-using ProtoBuf;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
@@ -31,11 +22,11 @@ namespace Scalper
             initConnections();
         }
 
-        private void ShowLogMessage(String message)
-        {
-            systemLog.Text = systemLog.Text + "\n" + message;
-
-        }
+        // private void ShowLogMessage(String message)
+        // {
+        //     systemLog.Text = systemLog.Text + "\n" + message;
+        //
+        // }
         
         private enum TrafficMode { Write, Read }
 
@@ -273,7 +264,7 @@ namespace Scalper
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 BinaryReader readFile = new BinaryReader(new FileStream(filename, FileMode.Open));
-                byte[] readBytes = readFile.ReadBytes((int) new System.IO.FileInfo(filename).Length + 1);
+                byte[] readBytes = readFile.ReadBytes((int) new FileInfo(filename).Length + 1);
 
                 var memoryWriter = new BinaryWriter(memoryStream);
                 memoryWriter.Write(readBytes);
@@ -375,7 +366,7 @@ namespace Scalper
                         break;
                     case "MassOrderCancelFailedEventHandler":
                         MassOrderCancelFailedEventHandler(
-                            readLongFromfile(jObject),
+                            readLongFromFile(jObject),
                             readExceptionFromFile(jObject));
                         break;
                     default:
@@ -391,7 +382,7 @@ namespace Scalper
             return (Exception) readedObject;
         }
 
-        private long readLongFromfile(JObject jObject)
+        private long readLongFromFile(JObject jObject)
         {
             string filename = getFilenameOfObject(jObject, "long");
             object readedObject = getObjectFromFile(filename);
