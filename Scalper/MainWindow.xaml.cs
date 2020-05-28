@@ -178,7 +178,7 @@ namespace Scalper
                         break;
                     case "NewPortfolioEventHandler":
 
-                        readPortfolioFromFile(jObject);
+                        NewPortfolioEventHandler(readPortfolioFromFile(jObject));
                             
                         //NewPortfolioEveHandler();
                         break;
@@ -373,9 +373,7 @@ namespace Scalper
             jsonWriter.WriteStartObject();
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
-            
-            
-            
+
             foreach (object objectForWrite in objectsForWrite)
             {
                 jsonWriter.WritePropertyName(objectForWrite.GetType().ToString());
@@ -385,7 +383,7 @@ namespace Scalper
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(memory_stream, objectForWrite);
                     byte[] array = memory_stream.ToArray();
-                    string filename = "traffic\\"+DateTime.Now.Ticks.ToString();
+                    string filename = "traffic\\"+DateTime.Now.Ticks;
                     BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
                     file.Write(array);
                     file.Close();
@@ -399,27 +397,37 @@ namespace Scalper
             _trafficFile.Flush();
         }
 
-        private static void readPortfolioFromFile(JObject jObject)
+        private  Portfolio readPortfolioFromFile(JObject jObject)
         {
-            
-            string filename = jObject.Property("StockSharp.BusinessEntities.Portfolio").ToString().
-                Replace("\"","").
-                Replace(":","").
-                Replace(" ","").
-                Replace("StockSharp.BusinessEntities.Portfolio","");
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Portfolio");
+            object readedObject = getObjectFromFile(filename);
+            return (Portfolio) readedObject;
+        }
+
+        private object getObjectFromFile(string filename)
+        {
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                BinaryReader readFile = new BinaryReader(new FileStream(filename,FileMode.Open));
-                byte[] readBytes = readFile.ReadBytes((int)new System.IO.FileInfo(filename).Length+1);
-                      
+                BinaryReader readFile = new BinaryReader(new FileStream(filename, FileMode.Open));
+                byte[] readBytes = readFile.ReadBytes((int) new System.IO.FileInfo(filename).Length + 1);
+
                 var memoryWriter = new BinaryWriter(memoryStream);
                 memoryWriter.Write(readBytes);
                 memoryWriter.Flush();
                 memoryStream.Position = 0;
                 var binaryFormatter = new BinaryFormatter();
                 object deserializedObject = binaryFormatter.Deserialize(memoryStream);
-                
+                return deserializedObject;
             }
+        }
+
+        private static string getFilenameOfObject(JObject jObject, string objectName)
+        {
+            return jObject.Property(objectName).ToString().
+                Replace("\"","").
+                Replace(":","").
+                Replace(" ","").
+                Replace(objectName,"");
         }
 
         private readonly TrafficMode _trafficMode = TrafficMode.Read;
