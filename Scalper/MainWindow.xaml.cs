@@ -90,86 +90,6 @@ namespace Scalper
             }
         }
 
-        private void playTraffic(StreamReader trafficSourceFile)
-        {
-            while (true)
-            {
-                string line = trafficSourceFile.ReadLine();
-                if (line == null)
-                    break;
-
-                JObject jObject = JObject.Parse(line);
-
-                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
-                    .Replace("trafficEventHandlerName", "")
-                    .Replace("\"", "")
-                    .Replace(" ", "")
-                    .Replace(":", "");
-                
-                switch (trafficEventHandlerName)
-                {
-                    case "RestoredEventHandler":
-                        RestoredEventHandler();
-                        break;
-                    case "ConnectedEventHandler":
-                        ConnectedEventHandler();
-                        break;
-                    case "DisconnectedEventHandler":
-                        DisconnectedEventHandler();
-                        break;
-                    case "ConnectionErrorEventHandler":
-                        
-                        break;
-                    case "TransactionErrorEventHandler":
-
-                        break;
-                    case "MarketDataSubscriptionFailedEventHandler":
-
-                        break;
-                    case "newSecurityEventHandler":
-                    
-                        break;
-                    case "MarketDepthChangedEventHandler":
-                        
-                        break;
-                    case "MarketDepthsChangedEventHandler":
-                        
-                        break;
-                    case "NewMyTradeEventHandler":
-                        
-                        break;
-                    case "NewTradeEventHandler":
-                        
-                        break;
-                    case "NewOrderEventHandler":
-                        
-                        break;
-                    case "NewStopOrderEventHandler":
-                        
-                        break;
-                    case "NewPortfolioEventHandler":
-                        
-                        NewPortfolioEventHandler(readPortfolioFromFile(jObject));
-                        
-                        break;
-                    case "NewPositionEventHandler":
-                        break;
-                    case "OrderRegisterFailedEventHandler":
-                        break;
-                    case "OrderCancelFailedEventHandler":
-                        break;
-                    case "StopOrderRegisterFailedEventHandler":
-                        break;
-                    case "StopOrderCancelFailedEventHandler":
-                        break;
-                    case "MassOrderCancelFailedEventHandler":
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
         private void SubscribeEvents()
         {
             _trader.ReConnectionSettings.WorkingTime = ExchangeBoard.Forts.WorkingTime;
@@ -348,13 +268,6 @@ namespace Scalper
             _trafficFile.Flush();
         }
 
-        private  Portfolio readPortfolioFromFile(JObject jObject)
-        {
-            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Portfolio");
-            object readedObject = getObjectFromFile(filename);
-            return (Portfolio) readedObject;
-        }
-
         private object getObjectFromFile(string filename)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -381,6 +294,194 @@ namespace Scalper
                 Replace(objectName,"");
         }
 
-        private readonly TrafficMode _trafficMode = TrafficMode.Write;
+        private void playTraffic(StreamReader trafficSourceFile)
+        {
+            while (true)
+            {
+                string line = trafficSourceFile.ReadLine();
+                if (line == null)
+                    break;
+
+                JObject jObject = JObject.Parse(line);
+
+                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
+                    .Replace("trafficEventHandlerName", "")
+                    .Replace("\"", "")
+                    .Replace(" ", "")
+                    .Replace(":", "");
+                
+                switch (trafficEventHandlerName)
+                {
+                    case "RestoredEventHandler":
+                        RestoredEventHandler();
+                        break;
+                    case "ConnectedEventHandler":
+                        ConnectedEventHandler();
+                        break;
+                    case "DisconnectedEventHandler":
+                        DisconnectedEventHandler();
+                        break;
+                    case "ConnectionErrorEventHandler":
+                        ConnectionErrorEventHandler(readConnectionExceptionFromFile(jObject));
+                        
+                        break;
+                    case "TransactionErrorEventHandler":
+                        TransactionErrorEventHandler(readTransactionErrorFromFile(jObject));
+                        break;
+                    case "MarketDataSubscriptionFailedEventHandler":
+                        MarketDataSubscriptionFailedEventHandler(
+                                 readSecurityFromFile(jObject),
+                            readMarketDataMessageFromFile(jObject),
+                            readConnectionExceptionFromFile(jObject));
+                        break;
+                    case "NewSecurityEventHandler":
+                        NewSecurityEventHandler(readSecurityFromFile(jObject));
+                        break;
+                    case "MarketDepthChangedEventHandler":
+                        MarketDepthChangedEventHandler(readMarketDepthFromFile(jObject));
+                        break;
+                    case "MarketDepthsChangedEventHandler":
+                        MarketDepthsChangedEventHandler(readChangedMarketDepthFromFile(jObject));
+                        break;
+                    case "NewMyTradeEventHandler":
+                        NewMyTradeEventHandler(readMyTradeFromFile(jObject));
+                        break;
+                    case "NewTradeEventHandler":
+                        NewTradeEventHandler(readTradeFromFile(jObject));                        
+                        break;
+                    case "NewOrderEventHandler":
+                        NewOrderEventHandler(readOrderFromFile(jObject));
+                        break;
+                    case "NewStopOrderEventHandler":
+                        NewStopOrderEventHandler(readOrderFromFile(jObject));
+                        break;
+                    case "NewPortfolioEventHandler":
+                        NewPortfolioEventHandler(readPortfolioFromFile(jObject));
+                        break;
+                    case "NewPositionEventHandler":
+                        NewPositionEventHandler(readPositionFromFile(jObject));
+                        break;
+                    case "OrderRegisterFailedEventHandler":
+                        OrderRegisterFailedEventHandler(readOrderFailFromFile(jObject));
+                        break;
+                    case "OrderCancelFailedEventHandler":
+                        OrderCancelFailedEventHandler(readOrderFailFromFile(jObject));
+                        break;
+                    case "StopOrderRegisterFailedEventHandler":
+                        StopOrderRegisterFailedEventHandler(readOrderFailFromFile(jObject));
+                        break;
+                    case "StopOrderCancelFailedEventHandler":
+                        StopOrderCancelFailedEventHandler(readOrderFailFromFile(jObject));
+                        break;
+                    case "MassOrderCancelFailedEventHandler":
+                        MassOrderCancelFailedEventHandler(
+                            readLongFromfile(jObject),
+                            readExceptionFromFile(jObject));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private Exception readExceptionFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "Exception");
+            object readedObject = getObjectFromFile(filename);
+            return (Exception) readedObject;
+        }
+
+        private long readLongFromfile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "long");
+            object readedObject = getObjectFromFile(filename);
+            return (long) readedObject;
+        }
+
+        private OrderFail readOrderFailFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.OrderFail");
+            object readedObject = getObjectFromFile(filename);
+            return (OrderFail) readedObject;
+        }
+
+        private Position readPositionFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Position");
+            object readedObject = getObjectFromFile(filename);
+            return (Position) readedObject;
+        }
+
+        private Order readOrderFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Order");
+            object readedObject = getObjectFromFile(filename);
+            return (Order) readedObject;
+        }
+
+        private Trade readTradeFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Trade");
+            object readedObject = getObjectFromFile(filename);
+            return (Trade) readedObject;
+        }
+
+        private MyTrade readMyTradeFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.MyTrade");
+            object readedObject = getObjectFromFile(filename);
+            return (MyTrade) readedObject;
+        }
+
+        private IEnumerable<MarketDepth> readChangedMarketDepthFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "ChangedMarketDepths");
+            object readedObject = getObjectFromFile(filename);
+            return (IEnumerable<MarketDepth>) readedObject;
+        }
+
+        private MarketDataMessage readMarketDataMessageFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.MarketDataMessage");
+            object readedObject = getObjectFromFile(filename);
+            return (MarketDataMessage) readedObject;
+        }
+
+        private Security readSecurityFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Security");
+            object readedObject = getObjectFromFile(filename);
+            return (Security) readedObject;
+        }
+
+        private Exception readTransactionErrorFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "TransactionError");
+            object readedObject = getObjectFromFile(filename);
+            return (Exception) readedObject;
+        }
+
+        private Exception readConnectionExceptionFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "ConnectionException");
+            object readedObject = getObjectFromFile(filename);
+            return (Exception) readedObject;
+        }
+
+        private MarketDepth readMarketDepthFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.MarketDepth");
+            object readedObject = getObjectFromFile(filename);
+            return (MarketDepth) readedObject;
+        }
+
+        private  Portfolio readPortfolioFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.Portfolio");
+            object readedObject = getObjectFromFile(filename);
+            return (Portfolio) readedObject;
+        }
+
+        private readonly TrafficMode _trafficMode = TrafficMode.Read;
     }
 }
