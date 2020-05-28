@@ -390,22 +390,7 @@ namespace Scalper
                     file.Write(array);
                     file.Close();
                     jsonWriter.WriteValue(filename);
-                    
-                    
-                    using (MemoryStream memory_stream2 = new MemoryStream())
-                    {
-                        BinaryReader readFile = new BinaryReader(new FileStream(filename,FileMode.Open));
-                        byte[] readBytes = readFile.ReadBytes((int)new System.IO.FileInfo(filename).Length);
-                     
-                        var writer = new BinaryWriter(memory_stream2);
-                        writer.Write(readBytes);
-                        writer.Flush();
-                        memory_stream2.Position = 0;
-                        var formatter2 = new BinaryFormatter();
-                        object deserialize = formatter2.Deserialize(memory_stream2);
-                
-                    }
-                    
+
                 }
             }
             jsonWriter.WriteEndObject();
@@ -416,24 +401,27 @@ namespace Scalper
 
         private static void readPortfolioFromFile(JObject jObject)
         {
-            using (MemoryStream memory_stream = new MemoryStream())
+            
+            string filename = jObject.Property("StockSharp.BusinessEntities.Portfolio").ToString().
+                Replace("\"","").
+                Replace(":","").
+                Replace(" ","").
+                Replace("StockSharp.BusinessEntities.Portfolio","");
+            using (MemoryStream memoryStream = new MemoryStream())
             {
-                string buffer = jObject.Value<string>("StockSharp.BusinessEntities.Portfolio");
-                byte[] bytesASCII = Encoding.ASCII.GetBytes(buffer);
-                byte[] bytesUnicode = Encoding.Unicode.GetBytes(buffer);
-                byte[] bytesUTF8 = Encoding.UTF8.GetBytes(buffer);
-                char[] array = buffer.ToArray();
-
-                var writer = new StreamWriter(memory_stream);
-                writer.Write(buffer);
-                writer.Flush();
-                memory_stream.Position = 0;
-                var formatter = new BinaryFormatter();
-                object deserialize = formatter.Deserialize(memory_stream);
+                BinaryReader readFile = new BinaryReader(new FileStream(filename,FileMode.Open));
+                byte[] readBytes = readFile.ReadBytes((int)new System.IO.FileInfo(filename).Length+1);
+                      
+                var memoryWriter = new BinaryWriter(memoryStream);
+                memoryWriter.Write(readBytes);
+                memoryWriter.Flush();
+                memoryStream.Position = 0;
+                var binaryFormatter = new BinaryFormatter();
+                object deserializedObject = binaryFormatter.Deserialize(memoryStream);
                 
             }
         }
 
-        private readonly TrafficMode _trafficMode = TrafficMode.Write;
+        private readonly TrafficMode _trafficMode = TrafficMode.Read;
     }
 }
