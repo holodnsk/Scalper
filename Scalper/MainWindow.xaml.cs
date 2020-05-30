@@ -254,18 +254,18 @@ namespace Scalper
 
         private object[] GetParametersForMethodFromFile(MethodInfo methodInfo, JObject jObject)
         {
-            object[] parameters = methodInfo.GetParameters();
-            object[] paramss = new object[parameters.Length];
+            ParameterInfo[] parametersFromMethodInfo = methodInfo.GetParameters();
+            object[] resultParameters = new object[parametersFromMethodInfo.Length];
             int countParameter = 0;
-            foreach (var parameter in parameters)
+            foreach (var parameter in parametersFromMethodInfo)
             {
                 string objectType = parameter.ToString().Split(" ")[0];
                 object objectFromFile = readObjectFromFile(jObject, objectType);
-                paramss[countParameter] = objectFromFile;
+                resultParameters[countParameter] = objectFromFile;
                 countParameter++;
             }
 
-            return paramss;
+            return resultParameters;
         }
 
         private readonly TrafficMode _trafficMode = TrafficMode.Read;
