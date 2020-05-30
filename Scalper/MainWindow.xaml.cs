@@ -334,7 +334,7 @@ namespace Scalper
                             readConnectionExceptionFromFile(jObject));
                         break;
                     case "NewSecurityEventHandler":
-                        NewSecurityEventHandler(readSecurityFromFile(jObject));
+                        NewSecurityEventHandler((Security)readFromFile(jObject,"StockSharp.BusinessEntities.Security"));
                         break;
                     case "MarketDepthChangedEventHandler":
                         MarketDepthChangedEventHandler(readMarketDepthFromFile(jObject));
@@ -383,6 +383,30 @@ namespace Scalper
                     default:
                         break;
                 }
+            }
+        }
+
+        private object readFromFile(JObject jObject, string objectType)
+        {
+            string filename = jObject.Property(objectType).ToString().
+                Replace("\"","").
+                Replace(":","").
+                Replace(" ","").
+                Replace(objectType,"");
+            getFilenameOfObject(jObject, objectType);
+            
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                BinaryReader readFile = new BinaryReader(new FileStream(filename, FileMode.Open));
+                byte[] readBytes = readFile.ReadBytes((int) new FileInfo(filename).Length + 1);
+
+                var memoryWriter = new BinaryWriter(memoryStream);
+                memoryWriter.Write(readBytes);
+                memoryWriter.Flush();
+                memoryStream.Position = 0;
+                var binaryFormatter = new BinaryFormatter();
+                object deserializedObject = binaryFormatter.Deserialize(memoryStream);
+                return deserializedObject;
             }
         }
 
