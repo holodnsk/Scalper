@@ -99,6 +99,7 @@ namespace Scalper
             _trader.NewMyTrade += newMyTrade => this.GuiAsync(() => NewMyTradeEventHandler(newMyTrade));
             _trader.NewTrade += newTrade => this.GuiAsync(() => NewTradeEventHandler(newTrade));
             _trader.NewOrder += newOrder => this.GuiAsync(() => NewOrderEventHandler(newOrder));
+            _trader.NewOrderLogItem += newOrderLogItem => this.GuiAsync(()=> NewOrderLogItemHandler(newOrderLogItem));
             _trader.NewStopOrder += newStopOrder => this.GuiAsync(() => NewStopOrderEventHandler(newStopOrder));
             _trader.NewPortfolio += newPortfolio => this.GuiAsync(() => NewPortfolioEventHandler(newPortfolio));
             _trader.NewPosition += newPosition => this.GuiAsync(() => NewPositionEventHandler(newPosition));
@@ -112,6 +113,11 @@ namespace Scalper
                 this.GuiAsync(() => StopOrderCancelFailedEventHandler(stopOrderCancelFailed));
             _trader.MassOrderCancelFailed += (transId, error) =>
                 this.GuiAsync(() => MassOrderCancelFailedEventHandler(transId, error));
+        }
+
+        private void NewOrderLogItemHandler(OrderLogItem newOrderLogItem)
+        {
+            WriteTraffic(MethodBase.GetCurrentMethod().Name, newOrderLogItem);
         }
 
 
@@ -219,6 +225,8 @@ namespace Scalper
             {
                 WriteTraffic(MethodBase.GetCurrentMethod().Name, security);
                 _trader.RegisterMarketDepth(security);
+                _trader.RegisterTrades(security);
+                _trader.RegisterOrderLog(security);
             }
         }
 
@@ -369,10 +377,20 @@ namespace Scalper
                             readLongFromFile(jObject),
                             readExceptionFromFile(jObject));
                         break;
+                    case "NewOrderLogItemHandler":
+                        NewOrderLogItemHandler(readOrdelLogFromFile(jObject));
+                        break;
                     default:
                         break;
                 }
             }
+        }
+
+        private OrderLogItem readOrdelLogFromFile(JObject jObject)
+        {
+            string filename = getFilenameOfObject(jObject, "StockSharp.BusinessEntities.OrderLogItem");
+            object readedObject = getObjectFromFile(filename);
+            return (OrderLogItem) readedObject;
         }
 
         private Exception readExceptionFromFile(JObject jObject)
