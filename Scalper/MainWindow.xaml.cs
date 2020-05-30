@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -20,7 +21,7 @@ namespace Scalper
         {
             
             InitializeComponent();
-            initConnections();
+            InitConnections();
         }
 
         // private void ShowLogMessage(String message)
@@ -57,7 +58,7 @@ namespace Scalper
                 ;
         }
 
-        private void initConnections()
+        private void InitConnections()
         {
             _dateTime = DateTime.Now.ToString("yyyy MM dd HH mm ss");
             _trader = new SmartTrader()
@@ -78,7 +79,7 @@ namespace Scalper
             if (_trafficMode == TrafficMode.Read)
             {
                 SelectTrafficSourceDialog dialog = new SelectTrafficSourceDialog();
-                dialog.TrafficSourсeFileSelectedEvent += fileName => playTraffic(new StreamReader("traffic\\"+fileName));
+                dialog.TrafficSourсeFileSelectedEvent += fileName => PlayTraffic(new StreamReader("traffic\\"+fileName));
             }
         }
 
@@ -95,8 +96,8 @@ namespace Scalper
             _trader.NewSecurity += security => this.GuiAsync(() => NewSecurityEventHandler(security));
             _trader.MarketDepthChanged += changedMarketDepth =>
                 this.GuiAsync(() => MarketDepthChangedEventHandler(changedMarketDepth));
-            // _trader.MarketDepthsChanged += changedMarketDepths =>
-            //     this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
+             _trader.MarketDepthsChanged += changedMarketDepths =>
+                 this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
             _trader.NewMyTrade += newMyTrade => this.GuiAsync(() => NewMyTradeEventHandler(newMyTrade));
             _trader.NewTrade += newTrade => this.GuiAsync(() => NewTradeEventHandler(newTrade));
             _trader.NewOrder += newOrder => this.GuiAsync(() => NewOrderEventHandler(newOrder));
@@ -230,7 +231,7 @@ namespace Scalper
                 _trader.RegisterOrderLog(security);
             }
         }
-        private void playTraffic(StreamReader trafficSourceFile)
+        private void PlayTraffic(StreamReader trafficSourceFile)
         {
             while (true)
             {
@@ -248,6 +249,7 @@ namespace Scalper
 
                 MethodInfo methodInfo = GetType().GetMethod(trafficEventHandlerName,BindingFlags.NonPublic | BindingFlags.Instance);
 
+                Debug.Assert(methodInfo != null, nameof(methodInfo) + " != null");
                 methodInfo.Invoke(this,GetParametersForMethodFromFile(methodInfo, jObject));
             }
         }
@@ -274,8 +276,6 @@ namespace Scalper
         {
             if (_trafficMode != TrafficMode.Write)
                 return;
-            
-            
 
             trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
             TextWriter textWriter = new StringWriter();
@@ -284,21 +284,19 @@ namespace Scalper
             jsonWriter.WritePropertyName("trafficEventHandlerName");
             jsonWriter.WriteValue(trafficEventHandlerName);
 
-            foreach (object objectForWrite in objectsForWrite)
+            foreach (var objectForWrite in objectsForWrite)
             {
                 jsonWriter.WritePropertyName(objectForWrite.GetType().ToString());
-                using (MemoryStream memory_stream = new MemoryStream())
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    // Serialize the object into the memory stream.
                     BinaryFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(memory_stream, objectForWrite);
-                    byte[] array = memory_stream.ToArray();
+                    formatter.Serialize(memoryStream, objectForWrite);
+                    byte[] array = memoryStream.ToArray();
                     string filename = "traffic\\"+DateTime.Now.Ticks;
                     BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
                     file.Write(array);
                     file.Close();
                     jsonWriter.WriteValue(filename);
-
                 }
             }
             jsonWriter.WriteEndObject();
