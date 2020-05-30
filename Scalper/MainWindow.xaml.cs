@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
+using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -244,81 +245,27 @@ namespace Scalper
                     .Replace("\"", "")
                     .Replace(" ", "")
                     .Replace(":", "");
-                
-                switch (trafficEventHandlerName)
-                {
-                    case "RestoredEventHandler":
-                        RestoredEventHandler();
-                        break;
-                    case "ConnectedEventHandler":
-                        ConnectedEventHandler();
-                        break;
-                    case "DisconnectedEventHandler":
-                        DisconnectedEventHandler();
-                        break;
-                    case "ConnectionErrorEventHandler":
-                        ConnectionErrorEventHandler((Exception) readFromFile(jObject,"ConnectionException"));
-                        break;
-                    case "TransactionErrorEventHandler":
-                        TransactionErrorEventHandler((Exception) readFromFile(jObject,"TransactionError"));
-                        break;
-                    case "MarketDataSubscriptionFailedEventHandler":
-                        MarketDataSubscriptionFailedEventHandler(
-                            (Security)readFromFile(jObject,"StockSharp.BusinessEntities.Security"),
-                            (MarketDataMessage) readFromFile(jObject,"StockSharp.BusinessEntities.MarketDataMessage"),
-                            (Exception) readFromFile(jObject,"ConnectionException"));
-                        break;
-                    case "NewSecurityEventHandler":
-                        NewSecurityEventHandler((Security)readFromFile(jObject,"StockSharp.BusinessEntities.Security"));
-                        break;
-                    case "MarketDepthChangedEventHandler":
-                        MarketDepthChangedEventHandler((MarketDepth) readFromFile(jObject,"StockSharp.BusinessEntities.MarketDepth"));
-                        break;
-                    case "MarketDepthsChangedEventHandler":
-                        MarketDepthsChangedEventHandler((IEnumerable<MarketDepth>) readFromFile(jObject,"StockSharp.BusinessEntities.ChangedMarketDepths"));
-                        break;
-                    case "NewMyTradeEventHandler":
-                        NewMyTradeEventHandler((MyTrade) readFromFile(jObject,"StockSharp.BusinessEntities.MyTrade"));
-                        break;
-                    case "NewTradeEventHandler":
-                        NewTradeEventHandler((Trade) readFromFile(jObject,"StockSharp.BusinessEntities.Trade"));                    
-                        break;
-                    case "NewOrderEventHandler":
-                        NewOrderEventHandler((Order) readFromFile(jObject,"StockSharp.BusinessEntities.Order"));
-                        break;
-                    case "NewStopOrderEventHandler":
-                        NewStopOrderEventHandler((Order) readFromFile(jObject,"StockSharp.BusinessEntities.Order"));
-                        break;
-                    case "NewPortfolioEventHandler":
-                        NewPortfolioEventHandler((Portfolio) readFromFile(jObject,"StockSharp.BusinessEntities.Portfolio"));
-                        break;
-                    case "NewPositionEventHandler":
-                        NewPositionEventHandler((Position) readFromFile(jObject,"StockSharp.BusinessEntities.Position"));
-                        break;
-                    case "OrderRegisterFailedEventHandler":
-                        OrderRegisterFailedEventHandler((OrderFail) readFromFile(jObject,"StockSharp.BusinessEntities.OrderFail"));
-                        break;
-                    case "OrderCancelFailedEventHandler":
-                        OrderCancelFailedEventHandler((OrderFail) readFromFile(jObject,"StockSharp.BusinessEntities.OrderFail"));
-                        break;
-                    case "StopOrderRegisterFailedEventHandler":
-                        StopOrderRegisterFailedEventHandler((OrderFail) readFromFile(jObject,"StockSharp.BusinessEntities.OrderFail"));
-                        break;
-                    case "StopOrderCancelFailedEventHandler":
-                        StopOrderCancelFailedEventHandler((OrderFail) readFromFile(jObject,"StockSharp.BusinessEntities.OrderFail"));
-                        break;
-                    case "MassOrderCancelFailedEventHandler":
-                        MassOrderCancelFailedEventHandler(
-                            (long) readFromFile(jObject,"long"),
-                            (Exception) readFromFile(jObject,"Exception"));
-                        break;
-                    case "NewOrderLogItemHandler":
-                        NewOrderLogItemHandler((OrderLogItem) readFromFile(jObject,"StockSharp.BusinessEntities.OrderLogItem"));
-                        break;
-                    default:
-                        break;
-                }
+
+                MethodInfo methodInfo = GetType().GetMethod(trafficEventHandlerName,BindingFlags.NonPublic | BindingFlags.Instance);
+
+                methodInfo.Invoke(this,GetParametersForMethodFromFile(methodInfo, jObject));
             }
+        }
+
+        private object[] GetParametersForMethodFromFile(MethodInfo methodInfo, JObject jObject)
+        {
+            object[] parameters = methodInfo.GetParameters();
+            object[] paramss = new object[parameters.Length];
+            int countParameter = 0;
+            foreach (var parameter in parameters)
+            {
+                string objectType = parameter.ToString().Split(" ")[0];
+                object objectFromFile = readObjectFromFile(jObject, objectType);
+                paramss[countParameter] = objectFromFile;
+                countParameter++;
+            }
+
+            return paramss;
         }
 
         private readonly TrafficMode _trafficMode = TrafficMode.Read;
@@ -360,7 +307,7 @@ namespace Scalper
             _trafficFile.Flush();
         }
 
-        private object readFromFile(JObject jObject, string objectType)
+        private object readObjectFromFile(JObject jObject, string objectType)
         {
             string filename = jObject.Property(objectType).ToString().
                 Replace("\"","").
