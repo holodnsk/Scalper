@@ -33,6 +33,7 @@ namespace Scalper.Strategies
             
             foreach (var quote in _currentMarketDepth.Bids)
                 depthTable += quote+"\n";
+            depthTable += _currentMarketDepth.LastChangeTime;
             
             _depthView.depthContent.Text = depthTable;
             }
