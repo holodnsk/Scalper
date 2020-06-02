@@ -725,6 +725,7 @@
     <Compile Include="SelectTrafficSourceDialog.xaml.cs">
       <DependentUpon>SelectTrafficSourceDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Strategies\AFLT.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

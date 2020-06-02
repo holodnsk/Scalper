@@ -8,6 +8,7 @@ using Ecng.Common;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Scalper.Strategies;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
@@ -219,6 +220,10 @@ namespace Scalper
         private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
+            if (changedMarketDepth.Security.Name=="AFLT")
+            {
+                AFLT.NewMarketDepth(changedMarketDepth);
+            }
         }
 
         private void NewSecurityEventHandler(Security security)
@@ -270,7 +275,7 @@ namespace Scalper
             return resultParameters;
         }
 
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        
 
         private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
         {
@@ -327,5 +332,6 @@ namespace Scalper
                 return deserializedObject;
             }
         }
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
     }
 }
