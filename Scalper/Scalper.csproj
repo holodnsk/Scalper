@@ -722,9 +722,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DepthView.xaml.cs">
+      <DependentUpon>DepthView.xaml</DependentUpon>
+    </Compile>    
     <Compile Include="SelectTrafficSourceDialog.xaml.cs">
       <DependentUpon>SelectTrafficSourceDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Strategies\AFLT.cs" />
+    <Page Include="DepthView.xaml" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
