@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using Ecng.Common;
+using Ecng.Reflection;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -261,7 +262,18 @@ namespace Scalper
 
         private object[] GetParametersForMethodFromFile(MethodInfo methodInfo, JObject jObject)
         {
+            var enumerable = jObject.Values<object>();
+            int count = 0;
+            foreach (object o in enumerable)
+            {
+                if (count==0)
+                    continue;
+                count++;
+                string objectType = o.ToString();
+                object objectFromFile = readObjectFromFile(jObject, objectType);
+            }
             ParameterInfo[] parametersFromMethodInfo = methodInfo.GetParameters();
+            Type[] parameterTypes = methodInfo.GetParameterTypes();
             object[] resultParameters = new object[parametersFromMethodInfo.Length];
             int countParameter = 0;
             foreach (var parameter in parametersFromMethodInfo)
@@ -291,7 +303,8 @@ namespace Scalper
 
             foreach (var objectForWrite in objectsForWrite)
             {
-                jsonWriter.WritePropertyName(objectForWrite.GetType().ToString());
+                string name = objectForWrite.GetType().ToString();
+                jsonWriter.WritePropertyName(name);
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
@@ -312,7 +325,8 @@ namespace Scalper
 
         private object readObjectFromFile(JObject jObject, string objectType)
         {
-            string filename = jObject.Property(objectType).ToString().
+            JProperty jProperty = jObject.Property(objectType);
+            string filename = jProperty.ToString().
                 Replace("\"","").
                 Replace(":","").
                 Replace(" ","").
@@ -332,6 +346,6 @@ namespace Scalper
                 return deserializedObject;
             }
         }
-        private readonly TrafficMode _trafficMode = TrafficMode.Write;
+        private readonly TrafficMode _trafficMode = TrafficMode.Read;
     }
 }
