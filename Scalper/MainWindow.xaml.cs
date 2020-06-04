@@ -9,6 +9,7 @@ using Ecng.Reflection;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OEC;
 using Scalper.Strategies;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
@@ -262,32 +263,16 @@ namespace Scalper
 
         private object[] GetParametersForMethodFromFile(MethodInfo methodInfo, JObject jObject)
         {
-            var enumerable = jObject.Values<object>();
-            int count = 0;
-            foreach (object o in enumerable)
+            List<object> resultPareameters = new List<object>();
+            
+            for (int parameterIndex = 0; parameterIndex < methodInfo.GetParameters().Length; parameterIndex++)
             {
-                if (count==0)
-                    continue;
-                count++;
-                string objectType = o.ToString();
-                object objectFromFile = readObjectFromFile(jObject, objectType);
+                var name = jObject.Properties().ToArray()[parameterIndex+1].Name; // first entity of jObject is method name
+                object objectFromFile = readObjectFromFile(jObject, name);
+                resultPareameters.Add(objectFromFile);
             }
-            ParameterInfo[] parametersFromMethodInfo = methodInfo.GetParameters();
-            Type[] parameterTypes = methodInfo.GetParameterTypes();
-            object[] resultParameters = new object[parametersFromMethodInfo.Length];
-            int countParameter = 0;
-            foreach (var parameter in parametersFromMethodInfo)
-            {
-                string objectType = parameter.ToString().Split(" ")[0];
-                object objectFromFile = readObjectFromFile(jObject, objectType);
-                resultParameters[countParameter] = objectFromFile;
-                countParameter++;
-            }
-
-            return resultParameters;
+            return resultPareameters.ToArray();
         }
-
-        
 
         private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
         {
