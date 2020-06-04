@@ -16,6 +16,7 @@ using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 using StockSharp.SmartCom;
 
+
 namespace Scalper
 {
     public partial class MainWindow 
@@ -238,6 +239,41 @@ namespace Scalper
                 _trader.RegisterOrderLog(security);
             }
         }
+
+        private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
+        {
+            if (_trafficMode != TrafficMode.Write)
+                return;
+
+            trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
+            TextWriter textWriter = new StringWriter();
+            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WritePropertyName("trafficEventHandlerName");
+            jsonWriter.WriteValue(trafficEventHandlerName);
+
+            foreach (var objectForWrite in objectsForWrite)
+            {
+                string name = objectForWrite.GetType().ToString();
+                jsonWriter.WritePropertyName(name);
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(memoryStream, objectForWrite);
+                    byte[] array = memoryStream.ToArray();
+                    string filename = "traffic\\"+DateTime.Now.Ticks;
+                    BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
+                    file.Write(array);
+                    file.Close();
+                    jsonWriter.WriteValue(filename);
+                }
+            }
+            jsonWriter.WriteEndObject();
+            _trafficFile.Write(textWriter);
+            _trafficFile.Write("\n");
+            _trafficFile.Flush();
+        }
+
         private void PlayTraffic(StreamReader trafficSourceFile)
         {
             while (true)
@@ -272,40 +308,6 @@ namespace Scalper
                 resultPareameters.Add(objectFromFile);
             }
             return resultPareameters.ToArray();
-        }
-
-        private void WriteTraffic(string trafficEventHandlerName, params object[] objectsForWrite)
-        {
-            if (_trafficMode != TrafficMode.Write)
-                return;
-
-            trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
-            TextWriter textWriter = new StringWriter();
-            JsonWriter jsonWriter = new JsonTextWriter(textWriter);
-            jsonWriter.WriteStartObject();
-            jsonWriter.WritePropertyName("trafficEventHandlerName");
-            jsonWriter.WriteValue(trafficEventHandlerName);
-
-            foreach (var objectForWrite in objectsForWrite)
-            {
-                string name = objectForWrite.GetType().ToString();
-                jsonWriter.WritePropertyName(name);
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(memoryStream, objectForWrite);
-                    byte[] array = memoryStream.ToArray();
-                    string filename = "traffic\\"+DateTime.Now.Ticks;
-                    BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
-                    file.Write(array);
-                    file.Close();
-                    jsonWriter.WriteValue(filename);
-                }
-            }
-            jsonWriter.WriteEndObject();
-            _trafficFile.Write(textWriter);
-            _trafficFile.Write("\n");
-            _trafficFile.Flush();
         }
 
         private object readObjectFromFile(JObject jObject, string objectType)
