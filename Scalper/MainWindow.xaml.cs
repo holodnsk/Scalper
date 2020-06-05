@@ -284,11 +284,7 @@ namespace Scalper
 
                 JObject jObject = JObject.Parse(line);
 
-                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").ToString()
-                    .Replace("trafficEventHandlerName", "")
-                    .Replace("\"", "")
-                    .Replace(" ", "")
-                    .Replace(":", "");
+                string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").Value.ToString();
 
                 MethodInfo methodInfo = GetType().GetMethod(trafficEventHandlerName,BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -313,17 +309,13 @@ namespace Scalper
         private object readObjectFromFile(JObject jObject, string objectType)
         {
             JProperty jProperty = jObject.Property(objectType);
-            string filename = jProperty.ToString().
-                Replace("\"","").
-                Replace(":","").
-                Replace(" ","").
-                Replace(objectType,"");
+            
+            string filename = jProperty.Value.ToString();
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 BinaryReader readFile = new BinaryReader(new FileStream(filename, FileMode.Open));
                 byte[] readBytes = readFile.ReadBytes((int) new FileInfo(filename).Length + 1);
-
                 var memoryWriter = new BinaryWriter(memoryStream);
                 memoryWriter.Write(readBytes);
                 memoryWriter.Flush();
