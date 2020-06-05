@@ -27,6 +27,8 @@ namespace Scalper.Strategies
             get => _currentMarketDepth;
             set { 
             _currentMarketDepth = value;
+            checkSignals();
+            
             string depthTable = "";
             foreach (var quote in _currentMarketDepth.Asks.Reverse())
                 depthTable += quote+"\n";
@@ -37,6 +39,76 @@ namespace Scalper.Strategies
             
             _depthView.depthContent.Text = depthTable;
             }
+        }
+
+        private void checkSignals()
+        {
+            // check all stoppers
+            checkBigLowValue();
+            checkBigLowIceberg();
+            checkBigLowHiddenIceberg();
+            checkBigHighValue();
+            checkBigHighIceberg();
+            checkBigHighHiddenIceberg();
+            checkMarketMakerHighValue();
+            checkMarketMakerLowValue();
+            // TODO more stoppers
+            
+            // check all vectors
+            checkPreFinalBigLowValue();
+            checkPreFinalBigHighValue();
+            // TODO more vectors
+
+        }
+
+        private void checkMarketMakerLowValue()
+        {
+            
+        }
+
+        private void checkMarketMakerHighValue()
+        {
+            
+        }
+
+        private void checkPreFinalBigHighValue()
+        {
+            
+        }
+
+        private void checkPreFinalBigLowValue()
+        {
+            
+        }
+
+        private void checkBigHighHiddenIceberg()
+        {
+            
+        }
+
+        private void checkBigHighIceberg()
+        {
+            
+        }
+
+        private void checkBigLowHiddenIceberg()
+        {
+            
+        }
+
+        private void checkBigLowIceberg()
+        {
+            
+        }
+
+        private void checkBigHighValue()
+        {
+            
+        }
+
+        private void checkBigLowValue()
+        {
+            
         }
     }
 }
