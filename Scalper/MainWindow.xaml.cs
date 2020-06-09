@@ -10,7 +10,6 @@ using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OEC;
-using Scalper.Strategies;
 using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;

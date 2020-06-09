@@ -1,19 +1,16 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using StockSharp.BusinessEntities;
 
-namespace Scalper.Strategies
+namespace Scalper
 {
     public class AFLT
     {
         private static AFLT Instanse = new AFLT();
-        private MarketDepth _currentMarketDepth;
         private DepthView _depthView;
 
-        public AFLT()
+        private AFLT()
         {
-            _depthView = new DepthView();
-            _depthView.Title = "AFLT";
+            _depthView = new DepthView {Title = "AFLT"};
             _depthView.Show();
         }
 
@@ -22,12 +19,13 @@ namespace Scalper.Strategies
             Instanse.CurrentMarketDepth = changedMarketDepth;
         }
 
-        public MarketDepth CurrentMarketDepth
+        private MarketDepth _currentMarketDepth;
+        private MarketDepth CurrentMarketDepth
         {
             get => _currentMarketDepth;
             set { 
             _currentMarketDepth = value;
-            checkSignals();
+            CheckSignals();
             
             string depthTable = "";
             foreach (var quote in _currentMarketDepth.Asks.Reverse())
@@ -41,72 +39,73 @@ namespace Scalper.Strategies
             }
         }
 
-        private void checkSignals()
+        private void CheckSignals()
         {
-            // check all stoppers
-            checkBigLowValue();
-            checkBigLowIceberg();
-            checkBigLowHiddenIceberg();
-            checkBigHighValue();
-            checkBigHighIceberg();
-            checkBigHighHiddenIceberg();
-            checkMarketMakerHighValue();
-            checkMarketMakerLowValue();
-            // TODO more stoppers
+            CheckStopperLowBigValue();
+            CheckStopperHighBigValue();
+
+            CheckStopperLowIceberg();
+            checkStopperHighIceberg();
+
+            CheckStopperLowHiddenIceberg();
+            CheckStopperHighHiddenIceberg();
             
-            // check all vectors
-            checkPreFinalBigLowValue();
-            checkPreFinalBigHighValue();
+            CheckStopperLowMarketMakerValue();
+            CheckStopperHighMarketMakerValue();
+            // TODO more stoppers
+
+            CheckVectorLowBigValuePreFinal();
+            CheckVectorHighBigValuePreFinal();
             // TODO more vectors
 
         }
 
-        private void checkMarketMakerLowValue()
+        private void CheckStopperLowBigValue()
         {
             
         }
 
-        private void checkMarketMakerHighValue()
+        private void CheckStopperHighBigValue()
         {
             
         }
 
-        private void checkPreFinalBigHighValue()
+        private void CheckStopperLowIceberg()
+        {
+            
+        }
+        
+        private void checkStopperHighIceberg()
         {
             
         }
 
-        private void checkPreFinalBigLowValue()
+        private void CheckStopperLowHiddenIceberg()
         {
             
         }
 
-        private void checkBigHighHiddenIceberg()
+        private void CheckStopperHighHiddenIceberg()
         {
             
         }
 
-        private void checkBigHighIceberg()
+        private void CheckStopperLowMarketMakerValue()
         {
             
         }
 
-        private void checkBigLowHiddenIceberg()
+        private void CheckStopperHighMarketMakerValue()
         {
             
         }
 
-        private void checkBigLowIceberg()
+        private void CheckVectorHighBigValuePreFinal()
         {
             
         }
 
-        private void checkBigHighValue()
-        {
-            
-        }
-
-        private void checkBigLowValue()
+        private void CheckVectorLowBigValuePreFinal()
         {
             
         }
