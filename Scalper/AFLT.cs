@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using StockSharp.BusinessEntities;
+using StockSharp.Messages;
 
 namespace Scalper
 {
@@ -10,8 +13,16 @@ namespace Scalper
 
         private AFLT()
         {
+            SetStrategyParameters();
             _depthView = new DepthView {Title = "AFLT"};
             _depthView.Show();
+        }
+
+        private decimal LowBigValue { get; set; }
+
+        private void SetStrategyParameters()
+        {
+            // todo 
         }
 
         public static void NewMarketDepth(MarketDepth changedMarketDepth)
@@ -20,6 +31,7 @@ namespace Scalper
         }
 
         private MarketDepth _currentMarketDepth;
+
         private MarketDepth CurrentMarketDepth
         {
             get => _currentMarketDepth;
@@ -39,10 +51,13 @@ namespace Scalper
             }
         }
 
+        private Dictionary<Decimal,Decimal> bigValues = new Dictionary<decimal, decimal>();
+
+
         private void CheckSignals()
         {
-            CheckStopperLowBigValue();
-            CheckStopperHighBigValue();
+            SetStoppersLowBigValue();
+            SetStoppersHighBigValue();
 
             CheckStopperLowIceberg();
             checkStopperHighIceberg();
@@ -60,12 +75,21 @@ namespace Scalper
 
         }
 
-        private void CheckStopperLowBigValue()
+        private void SetStoppersLowBigValue()
         {
-            
+            foreach (Quote quote in CurrentMarketDepth)
+            {
+                if (quote.OrderDirection==Sides.Buy)
+                {
+                    if (quote.Volume>=LowBigValue)
+                    {
+                        bigValues.Add(quote.Price,quote.Volume);
+                    }
+                }
+            }
         }
 
-        private void CheckStopperHighBigValue()
+        private void SetStoppersHighBigValue()
         {
             
         }
