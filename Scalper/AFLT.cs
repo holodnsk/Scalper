@@ -23,6 +23,7 @@ namespace Scalper
         private void SetStrategyParameters()
         {
             // todo 
+            LowBigValue = 10000;
         }
 
         public static void NewMarketDepth(MarketDepth changedMarketDepth)
@@ -83,6 +84,8 @@ namespace Scalper
                 {
                     if (quote.Volume>=LowBigValue)
                     {
+                        if (bigValues.ContainsKey(quote.Price)) // should create class: density witch characteristics
+                            bigValues.Remove(quote.Price);
                         bigValues.Add(quote.Price,quote.Volume);
                     }
                 }

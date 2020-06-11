@@ -324,6 +324,6 @@ namespace Scalper
                 return deserializedObject;
             }
         }
-        private readonly TrafficMode _trafficMode = TrafficMode.Read;
+        private readonly TrafficMode _trafficMode = TrafficMode.Write;
     }
 }
