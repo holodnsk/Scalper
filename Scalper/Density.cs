@@ -6,17 +6,17 @@ namespace Scalper
 {
     public class Density
     {
-        public Density(decimal price, decimal value)
+        public Density(decimal price, decimal volume, decimal maxVolume)
         {
             Price = price;
-            Value = value;
+            Volume = volume;
+            MaxVolume = maxVolume;
         }
 
         private OrderDirection Direction;
         public decimal Price { get; }
-        private decimal Value { get; set; }
-        public decimal MaxValue { get; }
-        
+        public decimal Volume { get; set; }
+        public decimal MaxVolume { get; set; }
 
 
         public override bool Equals(object density)
