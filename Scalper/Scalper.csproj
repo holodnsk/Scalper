@@ -723,6 +723,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AFLT.cs" />
+    <Compile Include="Density.cs" />
+    <Compile Include="DensityesContainer.cs" />
     <Compile Include="DepthView.xaml.cs">
       <DependentUpon>DepthView.xaml</DependentUpon>
     </Compile>    
