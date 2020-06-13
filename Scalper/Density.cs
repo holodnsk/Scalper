@@ -6,22 +6,32 @@ namespace Scalper
 {
     public class Density
     {
-        public decimal Price { get; set; }
-        public List<decimal> Values { get; set; }
-        public decimal MaxValue { get; set; }
-        
-        public OrderDirection Direction { get; set; }
-        
-        public bool Equals(Density density)
+        public Density(decimal price, decimal value)
         {
-            if (density == null)
-                return false;
-            return Price==density.Price && Direction==density.Direction;
+            Price = price;
+            Values = new List<decimal> {value};
         }
 
-        public int GetHashCode()
+        private decimal Price;
+        private List<decimal> Values;
+        private decimal MaxValue;
+        private OrderDirection Direction;
+        
+        
+        
+        public override bool Equals(object density)
         {
-            return Price.GetHashCode()+Values.GetHashCode()+MaxValue.GetHashCode();
+            if ((density == null) || ! this.GetType().Equals(density.GetType()))
+                return false;
+            
+            Density density1 = density as Density;
+            
+            return Price==density1.Price && Direction==density1.Direction;
+        }
+
+        public override int GetHashCode()
+        {
+            return Price.GetHashCode();
         }
     }
 }
