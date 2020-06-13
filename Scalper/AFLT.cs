@@ -85,20 +85,19 @@ namespace Scalper
                 if (quote.OrderDirection==Sides.Buy)
                 {
                     buyDensitiesContainer.AddValue(quote);
-                    
-                    if (quote.Volume>=LowBigValue)
-                    {
-                        if (bigValues.ContainsKey(quote.Price)) // should create class: density witch characteristics
-                            bigValues.Remove(quote.Price);
-                        bigValues.Add(quote.Price,quote.Volume);
-                    }
                 }
             }
         }
 
         private void SetStoppersHighBigValue()
         {
-            
+            foreach (Quote quote in CurrentMarketDepth)
+            {
+                if (quote.OrderDirection==Sides.Sell)
+                {
+                    sellDensitiesContainer.AddValue(quote);
+                }
+            }
         }
 
         private void CheckStopperLowIceberg()
