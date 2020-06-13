@@ -84,7 +84,7 @@ namespace Scalper
             {
                 if (quote.OrderDirection==Sides.Buy)
                 {
-                    buyDensitiesContainer.AddValue(quote);
+                    buyDensitiesContainer.HandleValue(quote);
                 }
             }
         }
@@ -95,7 +95,7 @@ namespace Scalper
             {
                 if (quote.OrderDirection==Sides.Sell)
                 {
-                    sellDensitiesContainer.AddValue(quote);
+                    sellDensitiesContainer.HandleValue(quote);
                 }
             }
         }

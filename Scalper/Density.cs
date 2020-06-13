@@ -9,16 +9,16 @@ namespace Scalper
         public Density(decimal price, decimal value)
         {
             Price = price;
-            Values = new List<decimal> {value};
+            Value = value;
         }
 
-        private decimal Price;
-        private List<decimal> Values;
-        private decimal MaxValue;
         private OrderDirection Direction;
+        public decimal Price { get; }
+        private decimal Value { get; set; }
+        public decimal MaxValue { get; }
         
-        
-        
+
+
         public override bool Equals(object density)
         {
             if ((density == null) || ! this.GetType().Equals(density.GetType()))

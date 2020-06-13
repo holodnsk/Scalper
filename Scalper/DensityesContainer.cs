@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ecng.Reflection;
 using StockSharp.BusinessEntities;
 
 namespace Scalper
@@ -8,30 +9,36 @@ namespace Scalper
     {
         public DensitiesContainer()
         {
-            Densities = new HashSet<Density>();
+            Densities = new Dictionary<decimal, Density>();
         }
 
-        public HashSet<Density> Densities { get; set; }
+        private Dictionary<decimal,Density> Densities;
         private const Decimal SignificantValue = 2000; // TODO config this
 
-        public void AddValue(Quote quote)
+        public void HandleValue(Quote quote)
         {
-            if (quote.Volume>=SignificantValue)
+            Density potentialDensity = new Density(quote.Price,quote.Volume);
+            if (Densities.ContainsKey(potentialDensity.Price))
             {
-                Density density = new Density(quote.Price,quote.Volume);
-                if (Densities.Contains(density))
+                Density prevDensity = Densities[potentialDensity.Price];
+
+                if (quote.Volume<prevDensity.MaxValue/3) // change to logic based maxvalue of density instead constant SignificantValue
                 {
-                    
+                    // TODO close position and order if have                        
                 }
                 else
                 {
-                    Densities.Add(density);
+                    // TODO renew 
                 }
-
-                
-                
             }
-            
+            else
+            {
+                if (quote.Volume>=SignificantValue)
+                {
+                    Densities.Add(potentialDensity.Price,potentialDensity);
+                }                
+            }
+
         }
     }
 }
