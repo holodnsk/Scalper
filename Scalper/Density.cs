@@ -9,23 +9,21 @@ namespace Scalper
             Price = price;
             Volume = volume;
             MaxVolume = maxVolume;
-            Direction = direction;
+            _direction = direction;
         }
 
-        private Sides Direction;
-        public decimal Price { get; }
+        private readonly Sides _direction;
+        private decimal Price { get; }
         public decimal Volume { get; set; }
         public decimal MaxVolume { get; set; }
 
 
         public override bool Equals(object density)
         {
-            if ((density == null) || !this.GetType().Equals(density.GetType()))
+            if ((density == null) || this.GetType() != density.GetType())
                 return false;
 
-            Density density1 = density as Density;
-
-            return Price == density1.Price && Direction == density1.Direction;
+            return density is Density density1 && (Price == density1.Price && _direction == density1._direction);
         }
 
         public override int GetHashCode()
