@@ -13,9 +13,21 @@ namespace Scalper
 
         private AFLT()
         {
+            _lowDensitiesContainer.NewDensityEvent += quote => NewDensityEventHandler(quote);
+            _lowDensitiesContainer.DensityRemovedEvent += quote => DensityRemovedEventHandler(quote);
             SetStrategyParameters();
             _depthView = new DepthView {Title = "AFLT"};
             _depthView.Show();
+        }
+
+        private void NewDensityEventHandler(Quote quote)
+        {
+            
+        }
+
+        private void DensityRemovedEventHandler(Quote quote)
+        {
+            
         }
 
         private void SetStrategyParameters()

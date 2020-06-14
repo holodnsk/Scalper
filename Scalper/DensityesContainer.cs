@@ -3,8 +3,12 @@ using StockSharp.BusinessEntities;
 
 namespace Scalper
 {
+    public delegate void NewDensityHandler(Quote quote);
+    public delegate void DensityRemovedHandler(Quote quote);
     public class DensitiesContainer
     {
+        public event NewDensityHandler NewDensityEvent;
+        public event DensityRemovedHandler DensityRemovedEvent;
         private readonly Dictionary<decimal, Density> _densities = new Dictionary<decimal, Density>();
         private const decimal SignificantVolume = 2000; // TODO config this
 
@@ -23,6 +27,7 @@ namespace Scalper
             if (isDensityBeingTooSmall)
             {
                 _densities.Remove(quote.Price);
+                DensityRemovedEvent?.Invoke(quote);
                 // TODO event for opened position and order if have for action                        
             }
 
@@ -30,7 +35,13 @@ namespace Scalper
                 _densities[quote.Price].Volume = quote.Volume;
 
             if (isNewDensity)
+            {
                 _densities.Add(quote.Price, new Density(quote.Price, quote.Volume, quote.Volume, quote.OrderDirection));
+                NewDensityEvent?.Invoke(quote);
+            }
+                
         }
+
+        
     }
 }
