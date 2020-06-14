@@ -17,62 +17,25 @@ namespace Scalper
 
         public void HandleValue(Quote quote)
         {
-            if (Densities.ContainsKey(quote.Price))
-            {
-                if (IsShouldRenewMaxVolume(quote))
-                    RenewMaxVolume(quote);
+            var IsShouldRenewMaxVolume = Densities.ContainsKey(quote.Price) && Densities[quote.Price].MaxVolume < quote.Volume;
+            var isDensityBeingTooSmall = Densities.ContainsKey(quote.Price) && (quote.Volume<Densities[quote.Price].MaxVolume/3 && quote.Volume<SignificantVolume);
+            var IsShouldRenewVolumeOfDensity = Densities.ContainsKey(quote.Price) && !(quote.Volume<Densities[quote.Price].MaxVolume/3 && quote.Volume<SignificantVolume);
+            var IsNewDensity = quote.Volume>=SignificantVolume && !Densities.ContainsKey(quote.Price);
+            
+            if (IsShouldRenewMaxVolume)
+                Densities[quote.Price].MaxVolume = quote.Volume;
 
-                if (IsDensityBeingTooSmall(quote))
-                {
-                    RemoveDensityEntity(quote);
-                    // TODO event for opened position and order if have for action                        
-                }
-                else
-                {
-                    RenewCurrentVolume(quote);
-                }
+            if (isDensityBeingTooSmall)
+            {
+                Densities.Remove(quote.Price);
+                // TODO event for opened position and order if have for action                        
             }
-            
-            if (IsNewDensity(quote))
-            {
-                AddNewDensityEntity(quote);
-            }                
-            
-        }
 
-        private bool RemoveDensityEntity(Quote quote)
-        {
-            return Densities.Remove(quote.Price);
-        }
+            if (IsShouldRenewVolumeOfDensity)
+                Densities[quote.Price].Volume = quote.Volume;
 
-        private void AddNewDensityEntity(Quote quote)
-        {
-            Densities.Add(quote.Price,new Density(quote.Price,quote.Volume,quote.Volume));
-        }
-
-        private bool IsNewDensity(Quote quote)
-        {
-            return quote.Volume>=SignificantVolume && !Densities.ContainsKey(quote.Price);
-        }
-
-        private decimal RenewCurrentVolume(Quote quote)
-        {
-            return Densities[quote.Price].Volume = quote.Volume;
-        }
-
-        private decimal RenewMaxVolume(Quote quote)
-        {
-            return Densities[quote.Price].MaxVolume = quote.Volume;
-        }
-
-        private bool IsDensityBeingTooSmall(Quote quote)
-        {
-            return quote.Volume<Densities[quote.Price].MaxVolume/3 && quote.Volume<SignificantVolume;
-        }
-
-        private bool IsShouldRenewMaxVolume(Quote quote)
-        {
-            return Densities[quote.Price].MaxVolume < quote.Volume;
+            if (IsNewDensity)
+                Densities.Add(quote.Price,new Density(quote.Price,quote.Volume,quote.Volume,quote.OrderDirection));
         }
     }
 }
