@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using AD.Common.DataStructures;
-using DevExpress.Mvvm.Native;
-using DevExpress.Xpf.Core;
-using StockSharp.Messages;
+﻿using StockSharp.Messages;
 
 namespace Scalper
 {
@@ -24,12 +20,12 @@ namespace Scalper
 
         public override bool Equals(object density)
         {
-            if ((density == null) || ! this.GetType().Equals(density.GetType()))
+            if ((density == null) || !this.GetType().Equals(density.GetType()))
                 return false;
-            
+
             Density density1 = density as Density;
-            
-            return Price==density1.Price && Direction==density1.Direction;
+
+            return Price == density1.Price && Direction == density1.Direction;
         }
 
         public override int GetHashCode()

@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
-using Ecng.Common;
-using Ecng.Reflection;
 using Ecng.Xaml;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,14 +13,12 @@ using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 using StockSharp.SmartCom;
 
-
 namespace Scalper
 {
-    public partial class MainWindow 
+    public partial class MainWindow
     {
         public MainWindow()
         {
-            
             InitializeComponent();
             InitConnections();
         }
@@ -32,8 +28,12 @@ namespace Scalper
         //     systemLog.Text = systemLog.Text + "\n" + message;
         //
         // }
-        
-        private enum TrafficMode { Write, Read }
+
+        private enum TrafficMode
+        {
+            Write,
+            Read
+        }
 
         private Connector _trader;
 
@@ -43,21 +43,21 @@ namespace Scalper
 
         private static bool CfgTradingSecurity(Security security)
         {
-            return 
+            return
                 security.Code.Contains("AFLT")
-                   // || security.Code.Contains("PLZL")
-                   // || security.Code.Contains("EUR_RUB_TOM")
-                   // || security.Code.Contains("ETLN")
-                   // || security.Code.Contains("RASP")
-                   // || security.Code.Contains("MAGN")
-                   // || security.Code.Contains("TGKA")
-                   // || security.Code.Contains("FEES")
-                   // || security.Code.Contains("MGNT")
-                   // || security.Code.Contains("MTLR")
-                   // || security.Code.Contains("OGKB")
-                   // || security.Code.Contains("TGKA")
-                   // || security.Code.Contains("YNDX")
-                   // || security.Code.Contains("ALRS")
+                // || security.Code.Contains("PLZL")
+                // || security.Code.Contains("EUR_RUB_TOM")
+                // || security.Code.Contains("ETLN")
+                // || security.Code.Contains("RASP")
+                // || security.Code.Contains("MAGN")
+                // || security.Code.Contains("TGKA")
+                // || security.Code.Contains("FEES")
+                // || security.Code.Contains("MGNT")
+                // || security.Code.Contains("MTLR")
+                // || security.Code.Contains("OGKB")
+                // || security.Code.Contains("TGKA")
+                // || security.Code.Contains("YNDX")
+                // || security.Code.Contains("ALRS")
                 ;
         }
 
@@ -77,12 +77,13 @@ namespace Scalper
                 _trafficFile = new StreamWriter(@"traffic\trafficFile " + _dateTime + ".txt", true);
                 SubscribeEvents();
                 _trader.Connect();
-            } 
+            }
 
             if (_trafficMode == TrafficMode.Read)
             {
                 SelectTrafficSourceDialog dialog = new SelectTrafficSourceDialog();
-                dialog.TrafficSourсeFileSelectedEvent += fileName => PlayTraffic(new StreamReader("traffic\\"+fileName));
+                dialog.TrafficSourсeFileSelectedEvent +=
+                    fileName => PlayTraffic(new StreamReader("traffic\\" + fileName));
             }
         }
 
@@ -99,12 +100,12 @@ namespace Scalper
             _trader.NewSecurity += security => this.GuiAsync(() => NewSecurityEventHandler(security));
             _trader.MarketDepthChanged += changedMarketDepth =>
                 this.GuiAsync(() => MarketDepthChangedEventHandler(changedMarketDepth));
-             _trader.MarketDepthsChanged += changedMarketDepths =>
-                 this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
+            _trader.MarketDepthsChanged += changedMarketDepths =>
+                this.GuiAsync(() => MarketDepthsChangedEventHandler(changedMarketDepths));
             _trader.NewMyTrade += newMyTrade => this.GuiAsync(() => NewMyTradeEventHandler(newMyTrade));
             _trader.NewTrade += newTrade => this.GuiAsync(() => NewTradeEventHandler(newTrade));
             _trader.NewOrder += newOrder => this.GuiAsync(() => NewOrderEventHandler(newOrder));
-            _trader.NewOrderLogItem += newOrderLogItem => this.GuiAsync(()=> NewOrderLogItemHandler(newOrderLogItem));
+            _trader.NewOrderLogItem += newOrderLogItem => this.GuiAsync(() => NewOrderLogItemHandler(newOrderLogItem));
             _trader.NewStopOrder += newStopOrder => this.GuiAsync(() => NewStopOrderEventHandler(newStopOrder));
             _trader.NewPortfolio += newPortfolio => this.GuiAsync(() => NewPortfolioEventHandler(newPortfolio));
             _trader.NewPosition += newPosition => this.GuiAsync(() => NewPositionEventHandler(newPosition));
@@ -222,7 +223,7 @@ namespace Scalper
         private void MarketDepthChangedEventHandler(MarketDepth changedMarketDepth)
         {
             WriteTraffic(MethodBase.GetCurrentMethod().Name, changedMarketDepth);
-            if (changedMarketDepth.Security.Name=="AFLT")
+            if (changedMarketDepth.Security.Name == "AFLT")
             {
                 AFLT.NewMarketDepth(changedMarketDepth);
             }
@@ -244,7 +245,7 @@ namespace Scalper
             if (_trafficMode != TrafficMode.Write)
                 return;
 
-            trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text)+1).ToString();
+            trafficEntitiesCounter.Text = (Int32.Parse(trafficEntitiesCounter.Text) + 1).ToString();
             TextWriter textWriter = new StringWriter();
             JsonWriter jsonWriter = new JsonTextWriter(textWriter);
             jsonWriter.WriteStartObject();
@@ -260,13 +261,14 @@ namespace Scalper
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(memoryStream, objectForWrite);
                     byte[] array = memoryStream.ToArray();
-                    string filename = "traffic\\"+DateTime.Now.Ticks;
-                    BinaryWriter file = new BinaryWriter(new FileStream(filename,FileMode.Create));
+                    string filename = "traffic\\" + DateTime.Now.Ticks;
+                    BinaryWriter file = new BinaryWriter(new FileStream(filename, FileMode.Create));
                     file.Write(array);
                     file.Close();
                     jsonWriter.WriteValue(filename);
                 }
             }
+
             jsonWriter.WriteEndObject();
             _trafficFile.Write(textWriter);
             _trafficFile.Write("\n");
@@ -285,30 +287,33 @@ namespace Scalper
 
                 string trafficEventHandlerName = jObject.Property("trafficEventHandlerName").Value.ToString();
 
-                MethodInfo methodInfo = GetType().GetMethod(trafficEventHandlerName,BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo methodInfo = GetType().GetMethod(trafficEventHandlerName,
+                    BindingFlags.NonPublic | BindingFlags.Instance);
 
                 Debug.Assert(methodInfo != null, nameof(methodInfo) + " != null");
-                methodInfo.Invoke(this,GetParametersForMethodFromFile(methodInfo, jObject));
+                methodInfo.Invoke(this, GetParametersForMethodFromFile(methodInfo, jObject));
             }
         }
 
         private object[] GetParametersForMethodFromFile(MethodInfo methodInfo, JObject jObject)
         {
-            List<object> resultPareameters = new List<object>();
-            
+            List<object> resultParameters = new List<object>();
+
             for (int parameterIndex = 0; parameterIndex < methodInfo.GetParameters().Length; parameterIndex++)
             {
-                var name = jObject.Properties().ToArray()[parameterIndex+1].Name; // first entity of jObject is method name
+                var name = jObject.Properties().ToArray()[parameterIndex + 1]
+                    .Name; // first entity of jObject is method name
                 object objectFromFile = readObjectFromFile(jObject, name);
-                resultPareameters.Add(objectFromFile);
+                resultParameters.Add(objectFromFile);
             }
-            return resultPareameters.ToArray();
+
+            return resultParameters.ToArray();
         }
 
         private object readObjectFromFile(JObject jObject, string objectType)
         {
             JProperty jProperty = jObject.Property(objectType);
-            
+
             string filename = jProperty.Value.ToString();
 
             using (MemoryStream memoryStream = new MemoryStream())
@@ -324,6 +329,7 @@ namespace Scalper
                 return deserializedObject;
             }
         }
+
         private readonly TrafficMode _trafficMode = TrafficMode.Read;
     }
 }
