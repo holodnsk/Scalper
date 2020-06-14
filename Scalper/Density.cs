@@ -1,19 +1,22 @@
 ﻿using System.Collections.Generic;
 using AD.Common.DataStructures;
 using DevExpress.Mvvm.Native;
+using DevExpress.Xpf.Core;
+using StockSharp.Messages;
 
 namespace Scalper
 {
     public class Density
     {
-        public Density(decimal price, decimal volume, decimal maxVolume)
+        public Density(decimal price, decimal volume, decimal maxVolume, Sides direction)
         {
             Price = price;
             Volume = volume;
             MaxVolume = maxVolume;
+            Direction = direction;
         }
 
-        private OrderDirection Direction;
+        private Sides Direction;
         public decimal Price { get; }
         public decimal Volume { get; set; }
         public decimal MaxVolume { get; set; }

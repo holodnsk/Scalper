@@ -10,8 +10,8 @@ namespace Scalper
     {
         private static AFLT Instanse = new AFLT();
         private DepthView _depthView;
-        private DensitiesContainer buyDensitiesContainer = new DensitiesContainer();
-        private DensitiesContainer sellDensitiesContainer = new DensitiesContainer();
+        private DensitiesContainer lowDensitiesContainer = new DensitiesContainer();
+        private DensitiesContainer highDensitiesContainer = new DensitiesContainer();
 
         private AFLT()
         {
@@ -84,7 +84,7 @@ namespace Scalper
             {
                 if (quote.OrderDirection==Sides.Buy)
                 {
-                    buyDensitiesContainer.HandleValue(quote);
+                    lowDensitiesContainer.HandleValue(quote);
                 }
             }
         }
@@ -95,7 +95,7 @@ namespace Scalper
             {
                 if (quote.OrderDirection==Sides.Sell)
                 {
-                    sellDensitiesContainer.HandleValue(quote);
+                    highDensitiesContainer.HandleValue(quote);
                 }
             }
         }
