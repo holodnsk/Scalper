@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using StockSharp.Algo;
 using StockSharp.BusinessEntities;
 using StockSharp.Messages;
 
@@ -6,15 +7,17 @@ namespace Scalper
 {
     public class AFLT
     {
-        private static readonly AFLT Instance = new AFLT();
+        
         private readonly DepthView _depthView;
         private readonly DensitiesContainer _lowDensitiesContainer = new DensitiesContainer();
         private readonly DensitiesContainer _highDensitiesContainer = new DensitiesContainer();
+        private readonly Connector _trader;
 
-        private AFLT()
+        public AFLT(Connector trader)
         {
             _lowDensitiesContainer.NewDensityEvent += quote => NewDensityEventHandler(quote);
             _lowDensitiesContainer.DensityRemovedEvent += quote => DensityRemovedEventHandler(quote);
+            _trader = trader;
             SetStrategyParameters();
             _depthView = new DepthView {Title = "AFLT"};
             _depthView.Show();
@@ -22,7 +25,16 @@ namespace Scalper
 
         private void NewDensityEventHandler(Quote quote)
         {
-            
+            var securityPriceStep = quote.Security.PriceStep.Value;
+            var quotePriceBuy = quote.Price+securityPriceStep;
+            decimal quotePriceSell = quote.Price-securityPriceStep;
+            _trader.RegisterOrder(new Order()
+            {
+                Direction = quote.OrderDirection,
+                Security = quote.Security,
+                Volume = 1,
+                Price = quote.OrderDirection==Sides.Buy?quotePriceBuy:quotePriceSell
+            });
         }
 
         private void DensityRemovedEventHandler(Quote quote)
@@ -35,9 +47,9 @@ namespace Scalper
             // todo 
         }
 
-        public static void NewMarketDepth(MarketDepth changedMarketDepth)
+        public void NewMarketDepth(MarketDepth changedMarketDepth)
         {
-            Instance.CurrentMarketDepth = changedMarketDepth;
+            CurrentMarketDepth = changedMarketDepth;
         }
 
         private MarketDepth _currentMarketDepth;

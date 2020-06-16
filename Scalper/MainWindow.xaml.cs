@@ -41,6 +41,8 @@ namespace Scalper
 
         private string _dateTime;
 
+        private AFLT AFLT;
+
         private static bool CfgTradingSecurity(Security security)
         {
             return
@@ -70,7 +72,9 @@ namespace Scalper
                 Password = "Y39HGY",
                 Address = SmartComAddresses.Demo
             };
-
+            
+            AFLT = new AFLT(_trader);
+            
             if (_trafficMode == TrafficMode.Write)
             {
                 Directory.CreateDirectory("traffic");
